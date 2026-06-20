@@ -1,8 +1,39 @@
-export default function LibraryPage() {
+import { requireCurrentUser } from '@/lib/auth/request';
+import { prisma } from '@/lib/db';
+
+export const dynamic = 'force-dynamic';
+
+export default async function LibraryPage() {
+  const user = await requireCurrentUser();
+  const prompts = await prisma.userPrompt.findMany({
+    where: { userId: user.id },
+    orderBy: { createdAt: 'desc' },
+    take: 50
+  });
+
   return (
-    <main style={{ padding: 32, fontFamily: 'system-ui, sans-serif' }}>
-      <h1>Personal Library Placeholder</h1>
-      <p>Phase 0 route shell for prompts, scenarios, generated images, clips, audio prompts, upscale history, favorites, and projects.</p>
+    <main style={{ minHeight: 'calc(100vh - 58px)', padding: 32, background: '#0b0e0f', color: '#edf2ee' }}>
+      <div style={{ maxWidth: 1000, margin: '0 auto' }}>
+        <h1>Personal prompt library</h1>
+        <p style={{ color: '#aeb9b3' }}>Basic Phase 3 list of prompts saved by {user.email}. Advanced library tools remain out of scope.</p>
+        {prompts.length === 0 ? (
+          <p>No saved prompts yet. <a href="/create/architecture" style={{ color: '#9fc1ad' }}>Open the Architecture studio</a>.</p>
+        ) : (
+          <div style={{ display: 'grid', gap: 10, marginTop: 24 }}>
+            {prompts.map(prompt => (
+              <article key={prompt.id} style={{ padding: 16, border: '1px solid #30383b', borderRadius: 8, background: '#14191b' }}>
+                <strong>{prompt.title}</strong>
+                <span style={{ display: 'block', marginTop: 5, color: '#8fa099', fontSize: 13 }}>
+                  {prompt.domainKey} - {prompt.createdAt.toISOString().slice(0, 10)}
+                </span>
+                <p style={{ color: '#c8d1cc', lineHeight: 1.55 }}>
+                  {prompt.promptBody.length > 360 ? `${prompt.promptBody.slice(0, 360)}...` : prompt.promptBody}
+                </p>
+              </article>
+            ))}
+          </div>
+        )}
+      </div>
     </main>
   );
 }
