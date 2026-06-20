@@ -13,7 +13,8 @@
     "prisma:migrate": "prisma migrate dev",
     "seed": "tsx scripts/seed.ts",
     "import:workbook": "tsx scripts/import-workbook.ts",
-    "validate:prompts": "tsx scripts/validate-prompt-length.ts"
+    "validate:prompts": "tsx scripts/validate-prompt-length.ts",
+    "validate:architecture": "tsx scripts/validate-architecture-quality.ts"
   },
   "dependencies": {
     "@prisma/adapter-pg": "^7.8.0",

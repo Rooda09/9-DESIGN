@@ -3,6 +3,12 @@ import {
   ARCHITECTURE_IMAGE_ENGINES,
   GEOMETRY_GUARD_OPTIONS
 } from '../src/lib/architecture/config';
+import {
+  ARCHITECTURE_QUALITY_GROUP_KEYS,
+  architectureQualityDropdownGroups,
+  architectureQualityDropdownOptions,
+  architectureQualityPromptTemplates
+} from '../src/config/architecture-quality';
 import type { ArchitectureDropdownGroupRecord } from '../src/lib/architecture/data';
 import {
   initialArchitectureSelections,
@@ -22,7 +28,13 @@ const baseInput = {
   userBrief: 'Luxury coastal villa exterior from an approved reference model',
   selections: [
     { groupKey: 'architectural_style', value: 'contemporary_luxury', label: 'Contemporary Luxury' },
-    { groupKey: 'lighting_time', value: 'blue_hour', label: 'Blue Hour' }
+    { groupKey: 'lighting_time', value: 'blue_hour', label: 'Blue Hour' },
+    {
+      groupKey: 'negative_constraints',
+      value: 'no_extra_floors_or_openings',
+      label: 'No Extra Floors or Openings',
+      promptFragment: 'extra floors, shifted windows, changed rooflines'
+    }
   ],
   references: [
     { id: 'geometry_reference', url: 'https://example.com/a.png', role: 'GEOMETRY_REFERENCE' as const, lockStrength: 'STRICT' as const }
@@ -38,6 +50,7 @@ describe('Architecture prompt compiler', () => {
     expect(pkg.geometryInstructions.join(' ')).toContain('plot boundary');
     expect(pkg.referenceInstructions.join(' ')).toContain('Geometry reference');
     expect(pkg.qualityChecklist).toContain('Geometry Guard scope followed');
+    expect(pkg.qualityChecklist).toContain('selected negative constraints are explicitly avoided');
   });
 
   it.each(GEOMETRY_GUARD_OPTIONS)(
@@ -86,6 +99,14 @@ describe('Architecture prompt compiler', () => {
 
     expect(pkg.enginePrompt.length).toBeLessThanOrEqual(2000);
     expect(pkg.warnings.length).toBeGreaterThan(0);
+  });
+
+  it('adds architecture-specific negative constraints from database selections', () => {
+    const pkg = compilePrompt(baseInput);
+
+    expect(pkg.negativePrompt).toContain('warped structural grid');
+    expect(pkg.negativePrompt).toContain('extra floors');
+    expect(pkg.negativePrompt).toContain('changed rooflines');
   });
 });
 
@@ -186,7 +207,7 @@ describe('Architecture default dropdown selection', () => {
     },
     {
       id: 'group_geometry',
-      key: 'geometry_guard',
+      key: 'geometry_guard_mode',
       labelEn: 'Geometry guard',
       labelAr: 'Geometry guard',
       descriptionEn: null,
@@ -211,7 +232,7 @@ describe('Architecture default dropdown selection', () => {
     }
   ];
 
-  it('hides the internal geometry_guard dropdown group from user selections', () => {
+  it('hides internal system dropdown groups from user selections', () => {
     expect(selectableArchitectureGroups(groups).map(group => group.key)).toEqual([
       'architectural_style',
       'camera_view'
@@ -240,5 +261,32 @@ describe('Architecture default dropdown selection', () => {
 
     expect(selections.architectural_style).toBe('style_modern');
     expect(selections.camera_view).toBe('camera_eye');
+  });
+});
+
+describe('Architecture quality seed data', () => {
+  it('covers every required Phase 4A Architecture dropdown category', () => {
+    expect(architectureQualityDropdownGroups.map(group => group.key)).toEqual(ARCHITECTURE_QUALITY_GROUP_KEYS);
+  });
+
+  it('gives every Architecture option complete metadata', () => {
+    for (const option of architectureQualityDropdownOptions) {
+      expect(option.labelEn.length).toBeGreaterThan(0);
+      expect(option.labelAr.length).toBeGreaterThan(0);
+      expect(option.bestFor.length).toBeGreaterThan(0);
+      expect(option.descriptionEn.length).toBeGreaterThan(0);
+      expect(option.descriptionAr.length).toBeGreaterThan(0);
+      expect(typeof option.isDefault).toBe('boolean');
+      expect(typeof option.isActive).toBe('boolean');
+      expect(Number.isInteger(option.sortOrder)).toBe(true);
+      expect(option.promptFragment.length).toBeGreaterThan(0);
+    }
+  });
+
+  it('keeps Architecture prompt templates within the 2000 character target', () => {
+    for (const template of architectureQualityPromptTemplates) {
+      expect(template.promptBody.length).toBeLessThanOrEqual(2000);
+      expect(template.negativePrompt.length).toBeLessThanOrEqual(2000);
+    }
   });
 });

@@ -87,6 +87,19 @@ The current MVP activates only the Architecture creation workflow:
 
 The MVP does not call any real AI generation provider and does not debit tokens when saving a prompt.
 
+## Phase 4A Architecture database quality status
+
+Phase 4A improves Architecture Studio content quality without adding new product domains or provider execution.
+
+- Adds a curated Architecture-only seed dataset for project type, building typology, design task, geometry guard mode, reference role, architectural style, school/movement influence, architect influence, facade system, massing type, roof type, opening/window rhythm, material palette, facade material, interior space type, landscape element, climate/context, camera view, lens/framing, lighting/time of day, mood/atmosphere, render quality, output purpose, and negative constraints.
+- Every seeded dropdown option includes label, default flag, best-for guidance, English description, Arabic description, active status, sort order, and a prompt fragment.
+- Adds professional Architecture templates and prompt-template records aimed at Geometry Guard exterior work and material/facade review, with prompt bodies kept under 2,000 characters.
+- Updates `npm run seed` to upsert Architecture domain records, image engine records, dropdown groups/options, templates, and prompt-template records.
+- Adds `npm run seed -- --preview` for offline count inspection and `npm run validate:architecture` for offline Architecture data validation.
+- Strengthens Architecture negative-prompt logic with database-selected negative constraints and adds an Architecture-specific quality checklist.
+
+Phase 4A still does not call real AI generation providers, create generation jobs, debit tokens, or implement Photography, Branding, Community, Competitions, Payments, Marketplace, Clips, Upscale, or Audio workflows.
+
 ## Local setup
 
 1. Install dependencies:
@@ -142,6 +155,7 @@ The MVP does not call any real AI generation provider and does not debit tokens 
    npm run build
    npm run import:workbook
    npm run validate:prompts
+   npm run validate:architecture
    ```
 
 9. Start the development server:
@@ -167,9 +181,10 @@ Admin-only routes redirect non-authenticated users to `/login` and non-admin use
 - If Phase 0 and Phase 1 migrations already exist locally, create a new Phase 2 migration from the updated schema instead of editing old migrations.
 - The Phase 1 schema narrows roles to `USER` and `ADMIN`, adds `UserProfile`, strengthens password-reset storage, and adds transaction status/history fields.
 - The Phase 2 schema adds upscale and audio background category/setting tables for admin-managed provider settings.
-- The Architecture-first MVP cleanup has no schema change. It requires at least one active Architecture domain, one published Architecture template, and active Architecture dropdown groups/options.
+- The Architecture-first MVP cleanup and Phase 4A database quality pass have no schema change. They require at least one active Architecture domain, one published Architecture template, and active Architecture dropdown groups/options.
 - Template defaults may be stored in `Template.defaultDropdowns` as a JSON object keyed by dropdown group key.
 - Optional dropdown prompt fragments may be stored in `DropdownOption.metadata.promptFragment`.
+- Phase 4A seed data stores curated Architecture prompt fragments in `DropdownOption.metadata.promptFragment` and prompt-template engine hints in `PromptTemplate.engineHints`.
 
 ## Remaining assumptions
 

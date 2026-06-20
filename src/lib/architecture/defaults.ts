@@ -5,8 +5,15 @@ import type {
 
 export type ArchitectureSelectionState = Record<string, string>;
 
+const SYSTEM_ARCHITECTURE_GROUP_KEYS = new Set([
+  'geometry_guard',
+  'geometry_guard_mode',
+  'reference_role',
+  'negative_constraints'
+]);
+
 export function selectableArchitectureGroups(groups: ArchitectureDropdownGroupRecord[]) {
-  return groups.filter(group => group.key !== 'geometry_guard' && group.options.length > 0);
+  return groups.filter(group => !SYSTEM_ARCHITECTURE_GROUP_KEYS.has(group.key) && group.options.length > 0);
 }
 
 export function initialArchitectureSelections(
