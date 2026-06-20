@@ -1,4 +1,8 @@
 import { EngineType } from '@prisma/client';
+import {
+  ARCHITECTURE_CLIP_ENGINES,
+  architectureClipScenarios
+} from '../src/config/architecture-clips';
 import { ARCHITECTURE_IMAGE_ENGINES } from '../src/lib/architecture/config';
 import { prisma } from '../src/lib/db';
 import {
@@ -14,6 +18,8 @@ async function preview() {
   console.log('Architecture seed preview');
   console.log({
     imageEngines: ARCHITECTURE_IMAGE_ENGINES.length,
+    clipEngines: ARCHITECTURE_CLIP_ENGINES.length,
+    clipScenarios: architectureClipScenarios.length,
     dropdownGroups: architectureQualityDropdownGroups.length,
     dropdownOptions: architectureQualityDropdownOptions.length,
     templates: architectureQualityTemplates.length,
@@ -64,6 +70,39 @@ async function seedArchitectureQualityData() {
         supportsImageToImage: true,
         supportsReferenceLock: true,
         config: { architectureGuidance: engine.guidance }
+      }
+    });
+  }
+
+  for (const engine of ARCHITECTURE_CLIP_ENGINES) {
+    await prisma.aIEngine.upsert({
+      where: { key: engine.databaseKey },
+      update: {
+        name: engine.name,
+        type: EngineType.CLIP,
+        isActive: true,
+        supportsImageToVideo: true,
+        supportsTextToVideo: true,
+        supportsReferenceLock: true,
+        config: {
+          architectureGuidance: engine.guidance,
+          promptKey: engine.key,
+          providerExecution: 'placeholder'
+        }
+      },
+      create: {
+        key: engine.databaseKey,
+        name: engine.name,
+        type: EngineType.CLIP,
+        isActive: true,
+        supportsImageToVideo: true,
+        supportsTextToVideo: true,
+        supportsReferenceLock: true,
+        config: {
+          architectureGuidance: engine.guidance,
+          promptKey: engine.key,
+          providerExecution: 'placeholder'
+        }
       }
     });
   }
@@ -193,9 +232,59 @@ async function seedArchitectureQualityData() {
     }
   }
 
+  for (const scenario of architectureClipScenarios) {
+    const existing = await prisma.clipScenario.findFirst({
+      where: { domainId: domain.id, key: scenario.key },
+      select: { id: true }
+    });
+    const data = {
+      domainId: domain.id,
+      key: scenario.key,
+      titleEn: scenario.titleEn,
+      titleAr: scenario.titleAr,
+      category: scenario.category,
+      style: scenario.style,
+      bestFor: scenario.bestFor,
+      descriptionEn: scenario.descriptionEn,
+      descriptionAr: scenario.descriptionAr,
+      scenarioPrompt: scenario.scenarioPrompt,
+      storyArc: [
+        `Opening: ${scenario.openingShot}`,
+        `Focus: ${scenario.subjectFocus}`,
+        `Atmosphere: ${scenario.atmosphere}`,
+        `Detail: ${scenario.architecturalDetail}`,
+        `Closing: ${scenario.closingShot}`
+      ].join(' '),
+      cameraMotion: scenario.cameraMovement,
+      durationSeconds: scenario.durationSeconds,
+      audioRequired: false,
+      engineHints: {
+        openingShot: scenario.openingShot,
+        subjectFocus: scenario.subjectFocus,
+        cameraMovement: scenario.cameraMovement,
+        atmosphere: scenario.atmosphere,
+        architecturalDetail: scenario.architecturalDetail,
+        closingShot: scenario.closingShot,
+        continuityDefaults: scenario.continuityDefaults,
+        engineHints: scenario.engineHints
+      },
+      maxCharacters: scenario.maxCharacters,
+      isPublished: scenario.isPublished,
+      version: scenario.version
+    };
+
+    if (existing) {
+      await prisma.clipScenario.update({ where: { id: existing.id }, data });
+    } else {
+      await prisma.clipScenario.create({ data });
+    }
+  }
+
   console.log('Architecture quality seed complete');
   console.log({
     imageEngines: ARCHITECTURE_IMAGE_ENGINES.length,
+    clipEngines: ARCHITECTURE_CLIP_ENGINES.length,
+    clipScenarios: architectureClipScenarios.length,
     dropdownGroups: architectureQualityDropdownGroups.length,
     dropdownOptions: architectureQualityDropdownOptions.length,
     templates: architectureQualityTemplates.length,

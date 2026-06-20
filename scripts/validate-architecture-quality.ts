@@ -5,6 +5,13 @@ import {
   architectureQualityPromptTemplates,
   architectureQualityTemplates
 } from '../src/config/architecture-quality';
+import {
+  ARCHITECTURE_CAMERA_MOVEMENT_KEYS,
+  ARCHITECTURE_CLIP_DURATIONS,
+  ARCHITECTURE_CLIP_ENGINE_KEYS,
+  ARCHITECTURE_CONTINUITY_KEYS,
+  architectureClipScenarios
+} from '../src/config/architecture-clips';
 
 const MAX_PROMPT_CHARS = 2000;
 
@@ -71,12 +78,38 @@ function main() {
     assert(promptTemplate.maxCharacters <= MAX_PROMPT_CHARS, `Prompt template ${promptTemplate.key} maxCharacters exceeds ${MAX_PROMPT_CHARS}`);
   }
 
+  const scenarioKeys = new Set<string>();
+  for (const scenario of architectureClipScenarios) {
+    assert(!scenarioKeys.has(scenario.key), `Duplicate Architecture clip scenario key: ${scenario.key}`);
+    scenarioKeys.add(scenario.key);
+    assert(nonEmpty(scenario.titleEn), `Clip scenario ${scenario.key} missing English title`);
+    assert(nonEmpty(scenario.titleAr), `Clip scenario ${scenario.key} missing Arabic title`);
+    assert(nonEmpty(scenario.bestFor), `Clip scenario ${scenario.key} missing best-for guidance`);
+    assert(nonEmpty(scenario.descriptionEn), `Clip scenario ${scenario.key} missing English description`);
+    assert(nonEmpty(scenario.descriptionAr), `Clip scenario ${scenario.key} missing Arabic description`);
+    assert(nonEmpty(scenario.openingShot), `Clip scenario ${scenario.key} missing opening shot`);
+    assert(nonEmpty(scenario.subjectFocus), `Clip scenario ${scenario.key} missing subject focus`);
+    assert(nonEmpty(scenario.atmosphere), `Clip scenario ${scenario.key} missing atmosphere`);
+    assert(nonEmpty(scenario.architecturalDetail), `Clip scenario ${scenario.key} missing architectural detail`);
+    assert(nonEmpty(scenario.closingShot), `Clip scenario ${scenario.key} missing closing shot`);
+    assert(ARCHITECTURE_CAMERA_MOVEMENT_KEYS.includes(scenario.cameraMovement), `Clip scenario ${scenario.key} has invalid camera movement`);
+    assert(ARCHITECTURE_CLIP_DURATIONS.includes(scenario.durationSeconds), `Clip scenario ${scenario.key} has invalid duration`);
+    for (const key of ARCHITECTURE_CONTINUITY_KEYS) {
+      assert(typeof scenario.continuityDefaults[key] === 'boolean', `Clip scenario ${scenario.key} missing continuity default ${key}`);
+    }
+    for (const engineKey of ARCHITECTURE_CLIP_ENGINE_KEYS) {
+      assert(nonEmpty(scenario.engineHints[engineKey]), `Clip scenario ${scenario.key} missing ${engineKey} guidance`);
+    }
+    assert(scenario.maxCharacters <= MAX_PROMPT_CHARS, `Clip scenario ${scenario.key} exceeds max character policy`);
+  }
+
   console.log('Architecture quality data valid');
   console.log({
     groups: architectureQualityDropdownGroups.length,
     options: architectureQualityDropdownOptions.length,
     templates: architectureQualityTemplates.length,
-    promptTemplates: architectureQualityPromptTemplates.length
+    promptTemplates: architectureQualityPromptTemplates.length,
+    clipScenarios: architectureClipScenarios.length
   });
 }
 
