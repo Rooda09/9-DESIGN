@@ -66,6 +66,23 @@ Dropdown options explicitly support:
 
 Phase 2 also adds Prisma models for `UpscaleCategory`, `UpscaleSetting`, `AudioBackgroundCategory`, and `AudioBackgroundSetting`.
 
+## Phase 3 Architecture prompt compiler status
+
+Phase 3 activates only the Architecture creation workflow:
+
+- `/create` provides domain selection with Architecture enabled and Photography/Branding intentionally disabled.
+- `/create/architecture` loads published Architecture templates and active dropdown groups/options from PostgreSQL.
+- Dropdown selections expose labels, default state, best-for guidance, English descriptions, and Arabic descriptions.
+- Geometry Guard supports Fixed Geometry, Semi-Fixed Geometry, Free Concept, Facade Only, Material Only, Interior Finish Only, and Landscape Only.
+- Reference roles support geometry, style, material, lighting, camera, and mood references.
+- The compiler produces a main prompt, negative prompt, geometry instructions, reference instructions, engine-specific prompt, and quality checklist.
+- Image prompt formatting is supported for Midjourney, DALL-E / GPT Image, Flux, Stable Diffusion, Leonardo, Runway, Kling, Pika, and Luma.
+- Engine prompts are compressed to a maximum of 2,000 characters.
+- Authenticated users can save compiled packages to their existing `UserPrompt` library records.
+- `/library` provides a basic list of the current user's saved prompts.
+
+Phase 3 does not call any real AI generation provider.
+
 ## Local setup
 
 1. Install dependencies:
@@ -104,6 +121,8 @@ Phase 2 also adds Prisma models for `UpscaleCategory`, `UpscaleSetting`, `AudioB
    npx prisma migrate dev --name phase_2_admin_database_management
    ```
 
+   Phase 3 does not require a new migration because it reuses the Phase 1 `UserPrompt` model and Phase 2 admin data models.
+
 7. Generate Prisma Client:
 
    ```bash
@@ -115,6 +134,8 @@ Phase 2 also adds Prisma models for `UpscaleCategory`, `UpscaleSetting`, `AudioB
    ```bash
    npm run test -- --run
    npx tsc --noEmit
+   npx prisma validate
+   npm run build
    npm run import:workbook
    npm run validate:prompts
    ```
@@ -142,6 +163,9 @@ Admin-only routes redirect non-authenticated users to `/login` and non-admin use
 - If Phase 0 and Phase 1 migrations already exist locally, create a new Phase 2 migration from the updated schema instead of editing old migrations.
 - The Phase 1 schema narrows roles to `USER` and `ADMIN`, adds `UserProfile`, strengthens password-reset storage, and adds transaction status/history fields.
 - The Phase 2 schema adds upscale and audio background category/setting tables for admin-managed provider settings.
+- Phase 3 has no schema change. It requires at least one active Architecture domain, one published Architecture template, and active Architecture dropdown groups/options.
+- Template defaults may be stored in `Template.defaultDropdowns` as a JSON object keyed by dropdown group key.
+- Optional dropdown prompt fragments may be stored in `DropdownOption.metadata.promptFragment`.
 
 ## Remaining assumptions
 
@@ -149,4 +173,7 @@ Admin-only routes redirect non-authenticated users to `/login` and non-admin use
 - Token refill is a payment placeholder only; pending refill transactions do not increase spendable balance.
 - AI engine execution, community, competitions, payment integration, and advanced user libraries remain out of scope.
 - Phase 2 CRUD pages are intentionally simple server-rendered tables and forms; bulk import, audit logs, rich previews, moderation workflows, and version publishing workflows remain later work.
+- Phase 3 accepts reference image URLs and role assignments but does not upload, inspect, or store reference files yet.
+- Saved prompt packages do not debit tokens and do not create generation jobs.
+- Photography, Branding, Clips, Upscale, Audio, Community, and Competitions remain intentionally unavailable in the Phase 3 creation UI.
 - Provider keys, payment credentials, storage credentials, and production secrets must be configured outside the repository.
