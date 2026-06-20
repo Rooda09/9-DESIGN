@@ -142,7 +142,8 @@
 }
 
 .infoPanel,
-.optionIntelligence {
+.optionIntelligence,
+.scopePanel {
   display: grid;
   gap: 7px;
   margin: 0 0 16px;
@@ -153,9 +154,14 @@
 }
 
 .infoPanel p,
-.optionIntelligence p {
+.optionIntelligence p,
+.scopePanel p {
   margin: 0;
   line-height: 1.55;
+}
+
+.scopePanel small {
+  color: #93a198;
 }
 
 .choiceGrid {
@@ -215,6 +221,17 @@
   border-radius: 4px;
   color: #a6c8b4;
   font-size: 11px;
+  text-transform: uppercase;
+}
+
+.inlineTag {
+  margin-left: 8px;
+  padding: 2px 6px;
+  border: 1px solid #465952;
+  border-radius: 4px;
+  color: #9fb6aa;
+  font-size: 11px;
+  font-style: normal;
   text-transform: uppercase;
 }
 
@@ -359,6 +376,12 @@
 .savePanel {
   padding-top: 14px;
   border-top: 1px solid #293135;
+}
+
+.saveNote {
+  margin: 0 0 12px;
+  color: #a8b8af;
+  line-height: 1.55;
 }
 
 .emptyState {

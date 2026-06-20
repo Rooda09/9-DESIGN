@@ -8,6 +8,11 @@ import type {
   ArchitectureTemplateRecord
 } from '@/lib/architecture/data';
 import {
+  initialArchitectureSelections,
+  selectableArchitectureGroups,
+  type ArchitectureSelectionState
+} from '@/lib/architecture/defaults';
+import {
   ARCHITECTURE_IMAGE_ENGINES,
   ARCHITECTURE_REFERENCE_ROLES,
   GEOMETRY_GUARD_OPTIONS,
@@ -18,7 +23,6 @@ import {
 import type { GeometryGuardMode } from '@/lib/types';
 import styles from './architecture-studio.module.css';
 
-type SelectionState = Record<string, string>;
 type ReferenceState = Record<ArchitectureReferenceRole, string>;
 
 interface CompileResponse {
@@ -40,25 +44,21 @@ const EMPTY_REFERENCES: ReferenceState = {
   MOOD_REFERENCE: ''
 };
 
-function selectableGroups(groups: ArchitectureDropdownGroupRecord[]) {
-  return groups.filter(group => group.key !== 'geometry_guard' && group.options.length > 0);
-}
-
-function initialSelections(
-  template: ArchitectureTemplateRecord | undefined,
-  groups: ArchitectureDropdownGroupRecord[]
-): SelectionState {
-  return Object.fromEntries(selectableGroups(groups).flatMap(group => {
-    const configured = template?.defaultDropdowns[group.key];
-    const option = group.options.find(item => item.value === configured)
-      ?? group.options.find(item => item.isDefault)
-      ?? (group.isRequired ? group.options[0] : undefined);
-    return option ? [[group.key, option.id]] : [];
-  }));
-}
-
 async function copyText(value: string) {
   await navigator.clipboard.writeText(value);
+}
+
+function selectionSource(
+  group: ArchitectureDropdownGroupRecord,
+  template: ArchitectureTemplateRecord | undefined,
+  selectedOptionId: string | undefined
+) {
+  const option = group.options.find(item => item.id === selectedOptionId);
+  if (!option) return null;
+  if (template?.defaultDropdowns[group.key] === option.value) return 'Template default';
+  if (option.isDefault) return 'Admin default';
+  if (group.isRequired && group.options[0]?.id === option.id) return 'Required fallback';
+  return 'User selected';
 }
 
 export function ArchitecturePromptStudio({ data }: { data: ArchitectureCreationData }) {
@@ -72,20 +72,21 @@ export function ArchitecturePromptStudio({ data }: { data: ArchitectureCreationD
   const [geometryGuard, setGeometryGuard] = useState<GeometryGuardMode>('SEMI_FIXED_GEOMETRY');
   const [brief, setBrief] = useState('');
   const [promptTitle, setPromptTitle] = useState(firstTemplate?.titleEn ?? 'Architecture prompt');
-  const [selections, setSelections] = useState<SelectionState>(() => initialSelections(firstTemplate, data.groups));
+  const [selections, setSelections] = useState<ArchitectureSelectionState>(() => initialArchitectureSelections(firstTemplate, data.groups));
   const [references, setReferences] = useState<ReferenceState>(EMPTY_REFERENCES);
   const [result, setResult] = useState<CompileResponse | null>(null);
   const [status, setStatus] = useState('');
   const [isCompiling, setIsCompiling] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
-  const groups = useMemo(() => selectableGroups(data.groups), [data.groups]);
+  const groups = useMemo(() => selectableArchitectureGroups(data.groups), [data.groups]);
   const selectedTemplate = data.templates.find(template => template.id === templateId);
+  const selectedGuard = GEOMETRY_GUARD_OPTIONS.find(option => option.value === geometryGuard);
 
   function selectTemplate(nextId: string) {
     const template = data.templates.find(item => item.id === nextId);
     setTemplateId(nextId);
-    setSelections(initialSelections(template, data.groups));
+    setSelections(initialArchitectureSelections(template, data.groups));
     setPromptTitle(template?.titleEn ?? 'Architecture prompt');
     if (template?.defaultEngineKey && isArchitectureEngineKey(template.defaultEngineKey)) {
       setEngineKey(template.defaultEngineKey);
@@ -179,7 +180,7 @@ export function ArchitecturePromptStudio({ data }: { data: ArchitectureCreationD
         setStatus(json.error ?? 'Prompt could not be saved.');
         return;
       }
-      setStatus('Prompt saved to your personal library.');
+      setStatus('Prompt saved privately to your personal library. No generation job was created.');
     } catch {
       setStatus('Prompt saving could not reach the server.');
     } finally {
@@ -214,11 +215,12 @@ export function ArchitecturePromptStudio({ data }: { data: ArchitectureCreationD
     <main className={styles.page}>
       <header className={styles.header}>
         <div>
-          <a className={styles.backLink} href="/create">Create studio / Architecture</a>
-          <p className={styles.eyebrow}>Architecture Prompt Compiler MVP</p>
-          <h1>Geometry-aware architectural direction</h1>
+          <a className={styles.backLink} href="/create">All domains / Architecture Studio</a>
+          <p className={styles.eyebrow}>Primary MVP creation route</p>
+          <h1>Architecture Studio for geometry-aware prompt packages</h1>
           <p className={styles.intro}>
-            Compile database-managed controls into a provider-specific prompt package without calling an image-generation API.
+            Use published Architecture templates, admin-managed dropdown defaults, Geometry Guard, and reference roles to
+            compile a provider-ready prompt package. No image-generation API is called here.
           </p>
         </div>
         <div className={styles.domainBadge}>
@@ -235,7 +237,7 @@ export function ArchitecturePromptStudio({ data }: { data: ArchitectureCreationD
               <span>01</span>
               <div>
                 <h2>Template and engine</h2>
-                <p>Published templates come from the Phase 2 admin database.</p>
+                <p>Published Architecture templates define the workflow, title, preferred engine, and dropdown defaults.</p>
               </div>
             </div>
 
@@ -276,9 +278,16 @@ export function ArchitecturePromptStudio({ data }: { data: ArchitectureCreationD
               <span>02</span>
               <div>
                 <h2>Geometry Guard</h2>
-                <p>Choose exactly what the compiler may change.</p>
+                <p>Set the design-change boundary before compiling. This is the main Architecture safety control.</p>
               </div>
             </div>
+            {selectedGuard ? (
+              <div className={styles.scopePanel}>
+                <strong>Current scope: {selectedGuard.label}</strong>
+                <p>{selectedGuard.description}</p>
+                <small>Best for: {selectedGuard.bestFor}</small>
+              </div>
+            ) : null}
             <div className={styles.choiceGrid}>
               {GEOMETRY_GUARD_OPTIONS.map(option => (
                 <label key={option.value} className={`${styles.choice} ${geometryGuard === option.value ? styles.choiceActive : ''}`}>
@@ -302,18 +311,23 @@ export function ArchitecturePromptStudio({ data }: { data: ArchitectureCreationD
               <span>03</span>
               <div>
                 <h2>Database controls</h2>
-                <p>Active options are loaded from Architecture dropdown records.</p>
+                <p>Each dropdown loads active Architecture/admin records and starts from template defaults, admin defaults, or required fallback values.</p>
               </div>
             </div>
             {groups.length === 0 ? (
               <p className={styles.notice}>No active Architecture dropdown groups are available. Configure them in Admin.</p>
             ) : groups.map(group => {
               const selectedOption = group.options.find(option => option.id === selections[group.key]);
+              const source = selectionSource(group, selectedTemplate, selections[group.key]);
               return (
                 <div className={styles.dropdownBlock} key={group.id}>
                   <label className={styles.field}>
-                    <span>{group.labelEn}{group.isRequired ? ' *' : ''}</span>
+                    <span>
+                      {group.labelEn}{group.isRequired ? ' *' : ''}
+                      {group.isAdvanced ? <em className={styles.inlineTag}>Advanced</em> : null}
+                    </span>
                     <small dir="rtl">{group.labelAr}</small>
+                    {group.descriptionEn ? <small>{group.descriptionEn}</small> : null}
                     <select
                       value={selections[group.key] ?? ''}
                       onChange={event => setSelections(current => ({ ...current, [group.key]: event.target.value }))}
@@ -332,16 +346,17 @@ export function ArchitecturePromptStudio({ data }: { data: ArchitectureCreationD
                       <div>
                         <strong>{selectedOption.labelEn}</strong>
                         {selectedOption.isDefault ? <span className={styles.defaultTag}>Default value</span> : null}
+                        {source ? <span className={styles.defaultTag}>{source}</span> : null}
                       </div>
                       <span dir="rtl">{selectedOption.labelAr}</span>
                       <p><b>Best for:</b> {selectedOption.bestFor || 'General Architecture use'}</p>
                       <p>{selectedOption.descriptionEn || 'No English description provided.'}</p>
-                      <p dir="rtl">{selectedOption.descriptionAr || 'لا يوجد وصف عربي.'}</p>
+                      <p dir="rtl">{selectedOption.descriptionAr || 'No Arabic description provided.'}</p>
                     </div>
                   ) : null}
 
                   <details className={styles.optionDirectory}>
-                    <summary>Review all option descriptions</summary>
+                    <summary>Review all labels, defaults, best-for notes, and descriptions</summary>
                     <div>
                       {group.options.map(option => (
                         <article key={option.id}>
@@ -349,7 +364,7 @@ export function ArchitecturePromptStudio({ data }: { data: ArchitectureCreationD
                           <span dir="rtl">{option.labelAr}</span>
                           <p><b>Best for:</b> {option.bestFor || 'General Architecture use'}</p>
                           <p>{option.descriptionEn || 'No English description provided.'}</p>
-                          <p dir="rtl">{option.descriptionAr || 'لا يوجد وصف عربي.'}</p>
+                          <p dir="rtl">{option.descriptionAr || 'No Arabic description provided.'}</p>
                         </article>
                       ))}
                     </div>
@@ -364,8 +379,12 @@ export function ArchitecturePromptStudio({ data }: { data: ArchitectureCreationD
               <span>04</span>
               <div>
                 <h2>Reference roles</h2>
-                <p>Add an image URL only for roles you want the compiler to use.</p>
+                <p>Assign each reference a job. Geometry references are strict; style, material, lighting, camera, and mood references guide without overriding Geometry Guard.</p>
               </div>
+            </div>
+            <div className={styles.scopePanel}>
+              <strong>Safe reference behavior</strong>
+              <p>Reference URLs are used only as prompt instructions in this MVP. They are not uploaded, inspected, stored, or sent to an AI provider.</p>
             </div>
             <div className={styles.referenceGrid}>
               {ARCHITECTURE_REFERENCE_ROLES.map(role => (
@@ -398,7 +417,7 @@ export function ArchitecturePromptStudio({ data }: { data: ArchitectureCreationD
                 maxLength={1600}
                 value={brief}
                 onChange={event => setBrief(event.target.value)}
-                placeholder="Example: Rework this coastal villa exterior into a restrained contemporary hospitality residence while preserving the approved massing and openings..."
+                placeholder="Example: Rework this coastal villa exterior into a restrained contemporary hospitality residence while preserving the approved massing and openings. Keep the current camera angle and focus on material, light, and facade refinement."
               />
               <small>{brief.length} / 1600 characters</small>
             </label>
@@ -412,7 +431,7 @@ export function ArchitecturePromptStudio({ data }: { data: ArchitectureCreationD
         <aside className={styles.preview}>
           <div className={styles.previewHeader}>
             <div>
-              <p className={styles.eyebrow}>Prompt preview</p>
+              <p className={styles.eyebrow}>Architecture prompt package</p>
               <h2>{result ? `${result.promptPackage.characterCount} characters` : 'Ready when you are'}</h2>
             </div>
             {result ? <span className={styles.score}>Quality {result.qualityGate.score}/100</span> : null}
@@ -421,15 +440,15 @@ export function ArchitecturePromptStudio({ data }: { data: ArchitectureCreationD
           {!result ? (
             <div className={styles.previewEmpty}>
               <strong>No compiled package yet</strong>
-              <p>Select a template, set Geometry Guard, review database controls, and add a project brief.</p>
+              <p>The preview will separate the main prompt, negative prompt, geometry instructions, reference instructions, engine-specific prompt, and quality checklist.</p>
             </div>
           ) : (
             <>
               <PreviewSection title="Main prompt" value={result.promptPackage.mainPrompt} />
               <PreviewSection title="Negative prompt" value={result.promptPackage.negativePrompt} />
-              <PreviewSection title="Engine-specific prompt" value={result.promptPackage.enginePrompt} />
               <ListSection title="Geometry preservation instructions" items={result.promptPackage.geometryInstructions} />
               <ListSection title="Reference image instructions" items={result.promptPackage.referenceInstructions} emptyLabel="No reference roles supplied." />
+              <PreviewSection title="Engine-specific prompt" value={result.promptPackage.enginePrompt} />
               <ListSection title="Quality checklist" items={result.promptPackage.qualityChecklist} />
               {result.promptPackage.warnings.length > 0 ? (
                 <ListSection title="Compiler warnings" items={result.promptPackage.warnings} />
@@ -442,6 +461,9 @@ export function ArchitecturePromptStudio({ data }: { data: ArchitectureCreationD
               </div>
 
               <div className={styles.savePanel}>
+                <p className={styles.saveNote}>
+                  Saving stores this prompt package privately in your library. It does not call an AI engine, create a generation job, or debit tokens.
+                </p>
                 <label className={styles.field}>
                   <span>Library title</span>
                   <input value={promptTitle} maxLength={120} onChange={event => setPromptTitle(event.target.value)} />

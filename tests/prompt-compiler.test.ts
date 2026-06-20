@@ -3,6 +3,11 @@ import {
   ARCHITECTURE_IMAGE_ENGINES,
   GEOMETRY_GUARD_OPTIONS
 } from '../src/lib/architecture/config';
+import type { ArchitectureDropdownGroupRecord } from '../src/lib/architecture/data';
+import {
+  initialArchitectureSelections,
+  selectableArchitectureGroups
+} from '../src/lib/architecture/defaults';
 import { architectureCompileSchema } from '../src/lib/architecture/validation';
 import { compilePrompt } from '../src/lib/prompt-compiler';
 
@@ -112,5 +117,128 @@ describe('Architecture compile validation', () => {
     });
 
     expect(result.success).toBe(false);
+  });
+});
+
+describe('Architecture default dropdown selection', () => {
+  const groups: ArchitectureDropdownGroupRecord[] = [
+    {
+      id: 'group_style',
+      key: 'architectural_style',
+      labelEn: 'Architectural style',
+      labelAr: 'Architectural style',
+      descriptionEn: null,
+      descriptionAr: null,
+      isRequired: true,
+      isAdvanced: false,
+      sortOrder: 1,
+      options: [
+        {
+          id: 'style_modern',
+          value: 'modern',
+          labelEn: 'Modern',
+          labelAr: 'Modern',
+          bestFor: null,
+          descriptionEn: null,
+          descriptionAr: null,
+          isDefault: true,
+          sortOrder: 1,
+          promptFragment: null
+        },
+        {
+          id: 'style_brutalist',
+          value: 'brutalist',
+          labelEn: 'Brutalist',
+          labelAr: 'Brutalist',
+          bestFor: null,
+          descriptionEn: null,
+          descriptionAr: null,
+          isDefault: false,
+          sortOrder: 2,
+          promptFragment: null
+        }
+      ]
+    },
+    {
+      id: 'group_camera',
+      key: 'camera_view',
+      labelEn: 'Camera view',
+      labelAr: 'Camera view',
+      descriptionEn: null,
+      descriptionAr: null,
+      isRequired: true,
+      isAdvanced: false,
+      sortOrder: 2,
+      options: [
+        {
+          id: 'camera_eye',
+          value: 'eye_level',
+          labelEn: 'Eye level',
+          labelAr: 'Eye level',
+          bestFor: null,
+          descriptionEn: null,
+          descriptionAr: null,
+          isDefault: false,
+          sortOrder: 1,
+          promptFragment: null
+        }
+      ]
+    },
+    {
+      id: 'group_geometry',
+      key: 'geometry_guard',
+      labelEn: 'Geometry guard',
+      labelAr: 'Geometry guard',
+      descriptionEn: null,
+      descriptionAr: null,
+      isRequired: true,
+      isAdvanced: false,
+      sortOrder: 3,
+      options: [
+        {
+          id: 'guard_fixed',
+          value: 'fixed',
+          labelEn: 'Fixed',
+          labelAr: 'Fixed',
+          bestFor: null,
+          descriptionEn: null,
+          descriptionAr: null,
+          isDefault: true,
+          sortOrder: 1,
+          promptFragment: null
+        }
+      ]
+    }
+  ];
+
+  it('hides the internal geometry_guard dropdown group from user selections', () => {
+    expect(selectableArchitectureGroups(groups).map(group => group.key)).toEqual([
+      'architectural_style',
+      'camera_view'
+    ]);
+  });
+
+  it('prefers template defaults before admin defaults', () => {
+    const selections = initialArchitectureSelections({
+      id: 'template_1',
+      key: 'template',
+      titleEn: 'Template',
+      titleAr: 'Template',
+      bestFor: null,
+      descriptionEn: null,
+      descriptionAr: null,
+      workflowType: 'exterior',
+      defaultEngineKey: 'midjourney',
+      defaultDropdowns: { architectural_style: 'brutalist' }
+    }, groups);
+
+    expect(selections.architectural_style).toBe('style_brutalist');
+  });
+
+  it('falls back to admin defaults and then first required option', () => {
+    const selections = initialArchitectureSelections(undefined, groups);
+
+    expect(selections.architectural_style).toBe('style_modern');
+    expect(selections.camera_view).toBe('camera_eye');
   });
 });
