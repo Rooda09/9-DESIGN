@@ -58,3 +58,83 @@ The platform should not behave like a simple prompt generator. It should behave 
 - Clips need optional audio-background generation and SFX direction.
 - Upscale must be a first-class step after image/clip generation.
 - Geometry Guard is the key architecture differentiator.
+
+## Phase 0 foundation status
+
+This repository is currently a validated foundation shell, not the full application. Phase 0 confirms:
+
+- Next.js App Router + TypeScript source layout under `src/app`, `src/lib`, and `src/config`.
+- Prisma PostgreSQL schema under `prisma/schema.prisma` with Prisma 7 configuration in `prisma.config.ts`.
+- Local service defaults in `docker-compose.yml` for PostgreSQL and Redis.
+- Environment examples in `.env.example`.
+- Excel workbook inspection scripts under `scripts/` for the uploaded seed workbook.
+- Placeholder routes for `/`, `/create`, `/admin`, and `/library`, plus API scaffolds for prompt compilation, admin dropdown options, and generation jobs.
+
+## Local setup
+
+1. Install dependencies:
+
+   ```bash
+   npm install
+   ```
+
+2. Copy environment defaults and update secrets before production use:
+
+   ```bash
+   cp .env.example .env
+   ```
+
+3. Start local services:
+
+   ```bash
+   docker compose up -d postgres redis
+   ```
+
+4. Validate the Prisma schema:
+
+   ```bash
+   npx prisma validate
+   ```
+
+5. Create and apply the initial migration:
+
+   ```bash
+   npx prisma migrate dev --name init
+   ```
+
+6. Generate Prisma Client:
+
+   ```bash
+   npm run prisma:generate
+   ```
+
+7. Preview seed data structure:
+
+   ```bash
+   npm run seed
+   ```
+
+8. Inspect the uploaded Excel workbook structure:
+
+   ```bash
+   npm run import:workbook
+   npm run validate:prompts
+   ```
+
+9. Start the development server:
+
+   ```bash
+   npm run dev
+   ```
+
+## Migration notes
+
+- Prisma 7 reads the database URL from `prisma.config.ts`; keep `DATABASE_URL` in `.env` and do not re-add `url = env("DATABASE_URL")` to `prisma/schema.prisma`.
+- The first real database migration should be created with `npx prisma migrate dev --name init` after PostgreSQL is running.
+- Workbook import is still a Phase 11 full importer task. Phase 0 only validates that the workbook package is readable and that the import script has the expected mapping plan.
+
+## Phase 0 assumptions and missing items
+
+- Authentication, token debiting, queue workers, provider adapters, storage, and admin authorization are intentionally placeholders for later phases.
+- The Excel importer does not write to the database yet; it reports sheet structure and keeps the row mapping TODOs explicit.
+- Provider API keys, storage credentials, Stripe/payment credentials, and production secrets are intentionally absent from `.env.example` or blank placeholders.

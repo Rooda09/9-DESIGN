@@ -1,13 +1,10 @@
-import ExcelJS from 'exceljs';
+import { inspectWorkbook } from './workbook-inspector';
 
 const workbookPath = process.argv[2] ?? 'data/ai_creative_control_platform_database_v2_expanded.xlsx';
 
 async function main() {
-  const workbook = new ExcelJS.Workbook();
-  await workbook.xlsx.readFile(workbookPath);
-
-  const sheetNames = workbook.worksheets.map(ws => ws.name);
-  console.log('Workbook sheets:', sheetNames);
+  const sheets = await inspectWorkbook(workbookPath);
+  console.log('Workbook sheets:', sheets.map(sheet => sheet.name));
 
   // Expected sheets from generated database:
   // README_Dashboard, Main_Domains, Platform_Modules, User_System, AI_Engines,
@@ -25,8 +22,8 @@ async function main() {
   // 7. Validate prompt/scenario length <= 2,000 characters.
   // 8. Write invalid rows to an import report.
 
-  for (const ws of workbook.worksheets) {
-    console.log(`${ws.name}: ${ws.rowCount} rows x ${ws.columnCount} columns`);
+  for (const sheet of sheets) {
+    console.log(`${sheet.name}: ${sheet.rowCount} rows x ${sheet.columnCount} columns`);
   }
 }
 

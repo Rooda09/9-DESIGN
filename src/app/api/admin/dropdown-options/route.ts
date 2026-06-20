@@ -12,7 +12,7 @@ const optionSchema = z.object({
   isDefault: z.boolean().default(false),
   isActive: z.boolean().default(true),
   sortOrder: z.number().int().default(0),
-  metadata: z.record(z.any()).optional()
+  metadata: z.record(z.string(), z.any()).optional()
 });
 
 export async function GET() {
