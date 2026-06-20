@@ -1,4 +1,4 @@
-import type { DomainKey, PromptCompileInput, PromptPackage } from './types';
+import type { PromptCompileInput, PromptPackage } from './types';
 import { buildAudioPrompt } from './audio-prompt';
 import { buildUpscalePrompt } from './upscale-router';
 import { getArchitectureEngine, getGeometryGuardOption } from './architecture/config';
@@ -101,22 +101,46 @@ function domainLockInstructions(input: PromptCompileInput): string[] {
   ];
 }
 
-function qualityChecklist(domain: DomainKey): string[] {
-  if (domain === 'ARCHITECTURE') {
-    return [
-      'Geometry Guard scope followed',
-      'plot boundary and floor count consistent',
-      'openings and roofline preserved where locked',
-      'materials physically believable',
-      'structure and scale realistic',
-      'camera and perspective coherent',
-      'no construction or code-compliance claim'
-    ];
+function architectureQualityChecklist(input: PromptCompileInput): string[] {
+  const selectedGroups = new Set(input.selections.map(selection => selection.groupKey));
+  const checklist = [
+    'Geometry Guard scope followed',
+    'plot boundary and floor count consistent',
+    'openings and roofline preserved where locked',
+    'building typology and project type are legible',
+    'design task is reflected without scope creep',
+    'materials are physically believable with correct texture scale and joint logic',
+    'facade system, roof type, and opening rhythm are architecturally coherent',
+    'climate/context response is visible in shade, envelope, material, or landscape decisions',
+    'camera, lens, and perspective remain coherent',
+    'reference roles are used only for their assigned influence',
+    'output purpose is clear for client review, exploration, or presentation',
+    'no construction, permit, or code-compliance claim'
+  ];
+
+  if (selectedGroups.has('negative_constraints')) {
+    checklist.push('selected negative constraints are explicitly avoided');
   }
+  return checklist;
+}
+
+function qualityChecklist(input: PromptCompileInput): string[] {
+  if (input.domain === 'ARCHITECTURE') return architectureQualityChecklist(input);
+
+  const domain = input.domain;
   if (domain === 'PHOTOGRAPHY') {
     return ['product identity preserved', 'lighting realistic', 'shadow/reflection credible', 'commercial crop suitable', 'background supports product'];
   }
   return ['brand palette consistent', 'message clear', 'layout hierarchy strong', 'platform crop suitable', 'not generic'];
+}
+
+function architectureNegativeConstraints(input: PromptCompileInput): string[] {
+  if (input.domain !== 'ARCHITECTURE') return [];
+
+  return input.selections
+    .filter(selection => selection.groupKey === 'negative_constraints')
+    .map(selection => selection.promptFragment || selection.label || selection.value)
+    .filter(Boolean);
 }
 
 function buildReferenceInstructions(input: PromptCompileInput): string[] {
@@ -156,7 +180,22 @@ function buildNegativePrompt(input: PromptCompileInput): string {
     'low quality, blurry, distorted geometry, unrealistic scale, broken perspective, random text, watermark, duplicated objects, malformed people, inconsistent lighting'
   ];
   if (input.domain === 'ARCHITECTURE') {
-    base.push('changed plot boundary, extra floors, incorrect openings, impossible structure, fake facade logic');
+    base.push(
+      'changed plot boundary',
+      'extra floors',
+      'incorrect openings',
+      'impossible structure',
+      'fake facade logic',
+      'warped structural grid',
+      'inconsistent floor heights',
+      'random window rhythm',
+      'impossible cantilever',
+      'plastic-looking stone',
+      'wrong texture scale',
+      'random cladding seams',
+      'exaggerated lens distortion',
+      'inaccurate shadows'
+    );
     if (input.geometryGuard === 'FACADE_ONLY') {
       base.push('moved windows, changed roofline, altered massing, modified site');
     }
@@ -169,6 +208,7 @@ function buildNegativePrompt(input: PromptCompileInput): string {
     if (input.geometryGuard === 'LANDSCAPE_ONLY') {
       base.push('changed building, modified facade, moved access, altered plot boundary');
     }
+    base.push(...architectureNegativeConstraints(input));
   }
   if (input.domain === 'PHOTOGRAPHY') {
     base.push('deformed product, altered logo, unreadable label, fake reflections, bad shadow, melted packaging');
@@ -253,7 +293,7 @@ export function compilePrompt(input: PromptCompileInput): PromptPackage {
     storyPrompt,
     audioPrompt,
     upscalePrompt,
-    qualityChecklist: qualityChecklist(input.domain),
+    qualityChecklist: qualityChecklist(input),
     characterCount: engineResult.text.length,
     warnings
   };
