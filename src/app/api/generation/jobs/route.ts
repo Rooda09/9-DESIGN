@@ -5,7 +5,7 @@ const schema = z.object({
   domain: z.enum(['ARCHITECTURE', 'PHOTOGRAPHY', 'BRANDING']),
   jobType: z.enum(['IMAGE_GENERATION', 'CLIP_GENERATION', 'AUDIO_GENERATION', 'IMAGE_UPSCALE', 'CLIP_UPSCALE']),
   engineKey: z.string().min(1),
-  promptPackage: z.record(z.any()),
+  promptPackage: z.record(z.string(), z.any()),
   projectId: z.string().optional()
 });
 

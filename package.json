@@ -16,10 +16,11 @@
     "validate:prompts": "tsx scripts/validate-prompt-length.ts"
   },
   "dependencies": {
-    "@prisma/client": "latest",
+    "@prisma/client": "7.8.0",
     "bcryptjs": "latest",
     "bullmq": "latest",
     "exceljs": "latest",
+    "jszip": "^3.10.1",
     "next": "latest",
     "next-auth": "latest",
     "react": "latest",
@@ -30,7 +31,7 @@
     "@types/node": "latest",
     "@types/react": "latest",
     "@types/react-dom": "latest",
-    "prisma": "latest",
+    "prisma": "7.8.0",
     "tsx": "latest",
     "typescript": "latest",
     "vitest": "latest"
