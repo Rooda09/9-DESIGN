@@ -39,6 +39,33 @@ Phase 1 adds only authentication, user roles, profile, and token wallet foundati
 - Protected `/admin` page and admin API scaffold access.
 - Basic pages for login, register, forgot password, profile, token wallet, and admin dashboard.
 
+## Phase 2 admin database management status
+
+Phase 2 adds admin-only CRUD surfaces for database-managed creative controls:
+
+- Domains.
+- Dropdown groups.
+- Dropdown options.
+- Templates.
+- Prompt library records.
+- Clip scenario records.
+- AI engines.
+- Upscale categories and settings.
+- Audio background categories and settings.
+
+All Phase 2 admin pages live under `/admin/*` and require an authenticated `ADMIN` user. Shared admin CRUD endpoints live under `/api/admin-crud/*` and also require `ADMIN`.
+
+Dropdown options explicitly support:
+
+- Default value flag.
+- Best-for guidance.
+- English description.
+- Arabic description.
+- Active/inactive status.
+- Sort order.
+
+Phase 2 also adds Prisma models for `UpscaleCategory`, `UpscaleSetting`, `AudioBackgroundCategory`, and `AudioBackgroundSetting`.
+
 ## Local setup
 
 1. Install dependencies:
@@ -74,7 +101,7 @@ Phase 1 adds only authentication, user roles, profile, and token wallet foundati
 6. Create or update the local migration:
 
    ```bash
-   npx prisma migrate dev --name phase_1_auth_wallet
+   npx prisma migrate dev --name phase_2_admin_database_management
    ```
 
 7. Generate Prisma Client:
@@ -111,13 +138,15 @@ Admin-only routes redirect non-authenticated users to `/login` and non-admin use
 ## Migration notes
 
 - Prisma 7 reads `DATABASE_URL` from `prisma.config.ts`; keep the value in `.env`.
-- If the database is empty, run `npx prisma migrate dev --name phase_1_auth_wallet`.
-- If a Phase 0 migration already exists locally, create a new Phase 1 migration from the updated schema instead of editing the old migration.
+- If the database is empty, run all migrations in order or create a fresh local migration from the current schema.
+- If Phase 0 and Phase 1 migrations already exist locally, create a new Phase 2 migration from the updated schema instead of editing old migrations.
 - The Phase 1 schema narrows roles to `USER` and `ADMIN`, adds `UserProfile`, strengthens password-reset storage, and adds transaction status/history fields.
+- The Phase 2 schema adds upscale and audio background category/setting tables for admin-managed provider settings.
 
 ## Remaining assumptions
 
 - Email delivery, password reset completion, MFA, OAuth, and production session rotation are not implemented yet.
 - Token refill is a payment placeholder only; pending refill transactions do not increase spendable balance.
-- AI engine integrations, community, competitions, and full admin database management remain out of scope.
+- AI engine execution, community, competitions, payment integration, and advanced user libraries remain out of scope.
+- Phase 2 CRUD pages are intentionally simple server-rendered tables and forms; bulk import, audit logs, rich previews, moderation workflows, and version publishing workflows remain later work.
 - Provider keys, payment credentials, storage credentials, and production secrets must be configured outside the repository.

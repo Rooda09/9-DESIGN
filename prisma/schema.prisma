@@ -214,6 +214,86 @@ model AIEngine {
   updatedAt   DateTime @updatedAt
 }
 
+model UpscaleCategory {
+  id            String @id @default(cuid())
+  key           String @unique
+  labelEn       String
+  labelAr       String
+  descriptionEn String?
+  descriptionAr String?
+  isActive      Boolean @default(true)
+  sortOrder     Int @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  settings      UpscaleSetting[]
+}
+
+model UpscaleSetting {
+  id              String @id @default(cuid())
+  categoryId      String
+  key             String
+  labelEn         String
+  labelAr         String
+  bestFor         String?
+  descriptionEn   String?
+  descriptionAr   String?
+  providerKey     String?
+  mode            String?
+  targetResolution String?
+  preserveRealism Boolean @default(true)
+  tokenCost       Int @default(0)
+  isDefault       Boolean @default(false)
+  isActive        Boolean @default(true)
+  sortOrder       Int @default(0)
+  config          Json?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  category        UpscaleCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@unique([categoryId, key])
+}
+
+model AudioBackgroundCategory {
+  id            String @id @default(cuid())
+  key           String @unique
+  labelEn       String
+  labelAr       String
+  descriptionEn String?
+  descriptionAr String?
+  isActive      Boolean @default(true)
+  sortOrder     Int @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  settings      AudioBackgroundSetting[]
+}
+
+model AudioBackgroundSetting {
+  id              String @id @default(cuid())
+  categoryId      String
+  key             String
+  labelEn         String
+  labelAr         String
+  bestFor         String?
+  descriptionEn   String?
+  descriptionAr   String?
+  mood            String?
+  genre           String?
+  tempo           String?
+  ambience        String?
+  promptFragment  String?
+  sfxDirection    String?
+  defaultDurationSeconds Int @default(8)
+  isDefault       Boolean @default(false)
+  isActive        Boolean @default(true)
+  sortOrder       Int @default(0)
+  config          Json?
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+  category        AudioBackgroundCategory @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@unique([categoryId, key])
+}
+
 model Template {
   id          String @id @default(cuid())
   domainId    String
