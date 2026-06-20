@@ -4,6 +4,8 @@
 
 A professional AI creative control platform that helps architects, photographers, brand specialists, and marketers create optimized prompts, images, clips, audio-backed scenes, upscaled outputs, reusable scenarios, and community-shared workflows.
 
+Current MVP scope: Architecture Studio first. The implemented user creation flow is Architecture only, focused on database-backed templates, dropdown defaults, Geometry Guard, reference roles, prompt package preview, and private prompt-library saves. Photography, Branding, Community, Competitions, Payments, Marketplace, real AI generation, Clips, Upscale, and Audio remain future placeholders unless explicitly implemented in later phases.
+
 ## 2. Main domains
 
 ### Architecture

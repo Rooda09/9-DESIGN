@@ -1,15 +1,16 @@
 export const metadata = {
-  title: 'AI Creative Control Platform',
-  description: 'Professional AI creative control platform'
+  title: 'Architecture Studio MVP',
+  description: 'Architecture-first prompt compiler and Geometry Guard MVP'
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
       <body style={{ margin: 0, fontFamily: 'system-ui, sans-serif', background: '#f8fafc', color: '#111827' }}>
-        <nav style={{ display: 'flex', gap: 16, padding: '16px 32px', borderBottom: '1px solid #e5e7eb', background: '#ffffff' }}>
-          <a href="/">Home</a>
-          <a href="/create">Create</a>
+        <nav style={{ display: 'flex', gap: 16, padding: '16px 32px', borderBottom: '1px solid #e5e7eb', background: '#ffffff', flexWrap: 'wrap' }}>
+          <a href="/create/architecture" style={{ fontWeight: 800 }}>Architecture Studio</a>
+          <a href="/">Overview</a>
+          <a href="/create">All domains</a>
           <a href="/library">Library</a>
           <a href="/profile">Profile</a>
           <a href="/tokens">Tokens</a>

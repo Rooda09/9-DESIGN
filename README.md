@@ -1,18 +1,20 @@
-# AI Creative Control Platform - Codex Package
+# Architecture Studio MVP - Codex Package
 
-This repository is the implementation blueprint and foundation shell for a professional AI image, clip, prompt, scenario, audio, upscale, community, and admin-management platform.
+This repository currently focuses on an Architecture-first MVP: a professional prompt compiler for Architecture Studio, Geometry Guard, reference roles, engine-specific prompt packages, and private prompt-library saves.
 
-## Product summary
+## Architecture-first MVP summary
 
-The platform has three primary domains:
+The active MVP domain is Architecture.
 
-1. Architecture - image and clip generation with geometry preservation, boundary control, facade/interior/landscape control, material logic, view control, storytelling, upscale, and quality gates.
-2. Photography - commercial photography, product lock, lighting control, set/background generation, campaign variants, clip scenarios, upscale, and audio-backed product/video storytelling.
-3. Branding - brand identity, campaigns, visual systems, logo/monogram exploration, social/ad content, storytelling, brand memory, audio identity, upscale, and clip scenarios.
+1. Architecture Studio - active MVP route for database-backed templates, dropdown defaults, Geometry Guard, reference roles, prompt package preview, and private save-to-library.
+2. Photography - Coming Soon placeholder only; no user creation flow is implemented.
+3. Branding - Coming Soon placeholder only; no user creation flow is implemented.
 
-The platform should behave like a professional creative control system:
+The MVP should behave like a professional Architecture prompt control system:
 
-User choices + defaults + references + project memory -> optimized engine-specific prompt package -> generation job -> quality gate -> revision actions -> saved library/community/competition.
+Architecture template + admin dropdown defaults + Geometry Guard + reference roles + project brief -> optimized engine-specific prompt package -> quality checklist -> private user library.
+
+Real AI image generation, Photography, Branding, Community, Competitions, Payments, Marketplace, Clips, Upscale, and Audio workflows are intentionally out of scope for this MVP pass.
 
 ## Phase 0 foundation status
 
@@ -66,22 +68,24 @@ Dropdown options explicitly support:
 
 Phase 2 also adds Prisma models for `UpscaleCategory`, `UpscaleSetting`, `AudioBackgroundCategory`, and `AudioBackgroundSetting`.
 
-## Phase 3 Architecture prompt compiler status
+## Architecture Studio MVP status
 
-Phase 3 activates only the Architecture creation workflow:
+The current MVP activates only the Architecture creation workflow:
 
-- `/create` provides domain selection with Architecture enabled and Photography/Branding intentionally disabled.
+- Main navigation prioritizes `/create/architecture` as `Architecture Studio`.
+- `/create` provides domain selection with Architecture enabled and Photography/Branding marked Coming Soon.
 - `/create/architecture` loads published Architecture templates and active dropdown groups/options from PostgreSQL.
-- Dropdown selections expose labels, default state, best-for guidance, English descriptions, and Arabic descriptions.
-- Geometry Guard supports Fixed Geometry, Semi-Fixed Geometry, Free Concept, Facade Only, Material Only, Interior Finish Only, and Landscape Only.
-- Reference roles support geometry, style, material, lighting, camera, and mood references.
+- Dropdown selections expose labels, default source, best-for guidance, English descriptions, and Arabic descriptions.
+- Dropdown defaults are selected in this order: template default, admin default option, first option for required fields.
+- Geometry Guard supports Fixed Geometry, Semi-Fixed Geometry, Free Concept, Facade Only, Material Only, Interior Finish Only, and Landscape Only with clear change-boundary explanations.
+- Reference roles support geometry, style, material, lighting, camera, and mood references with safe role-specific guidance.
 - The compiler produces a main prompt, negative prompt, geometry instructions, reference instructions, engine-specific prompt, and quality checklist.
 - Image prompt formatting is supported for Midjourney, DALL-E / GPT Image, Flux, Stable Diffusion, Leonardo, Runway, Kling, Pika, and Luma.
 - Engine prompts are compressed to a maximum of 2,000 characters.
-- Authenticated users can save compiled packages to their existing `UserPrompt` library records.
+- Authenticated users can save compiled packages privately to their existing `UserPrompt` library records.
 - `/library` provides a basic list of the current user's saved prompts.
 
-Phase 3 does not call any real AI generation provider.
+The MVP does not call any real AI generation provider and does not debit tokens when saving a prompt.
 
 ## Local setup
 
@@ -121,7 +125,7 @@ Phase 3 does not call any real AI generation provider.
    npx prisma migrate dev --name phase_2_admin_database_management
    ```
 
-   Phase 3 does not require a new migration because it reuses the Phase 1 `UserPrompt` model and Phase 2 admin data models.
+   The Architecture-first MVP cleanup does not require a new migration because it reuses the Phase 1 `UserPrompt` model and Phase 2 admin data models.
 
 7. Generate Prisma Client:
 
@@ -163,7 +167,7 @@ Admin-only routes redirect non-authenticated users to `/login` and non-admin use
 - If Phase 0 and Phase 1 migrations already exist locally, create a new Phase 2 migration from the updated schema instead of editing old migrations.
 - The Phase 1 schema narrows roles to `USER` and `ADMIN`, adds `UserProfile`, strengthens password-reset storage, and adds transaction status/history fields.
 - The Phase 2 schema adds upscale and audio background category/setting tables for admin-managed provider settings.
-- Phase 3 has no schema change. It requires at least one active Architecture domain, one published Architecture template, and active Architecture dropdown groups/options.
+- The Architecture-first MVP cleanup has no schema change. It requires at least one active Architecture domain, one published Architecture template, and active Architecture dropdown groups/options.
 - Template defaults may be stored in `Template.defaultDropdowns` as a JSON object keyed by dropdown group key.
 - Optional dropdown prompt fragments may be stored in `DropdownOption.metadata.promptFragment`.
 
@@ -171,9 +175,9 @@ Admin-only routes redirect non-authenticated users to `/login` and non-admin use
 
 - Email delivery, password reset completion, MFA, OAuth, and production session rotation are not implemented yet.
 - Token refill is a payment placeholder only; pending refill transactions do not increase spendable balance.
-- AI engine execution, community, competitions, payment integration, and advanced user libraries remain out of scope.
+- AI engine execution, Photography flows, Branding flows, community, competitions, payment integration, marketplace features, and advanced user libraries remain out of scope.
 - Phase 2 CRUD pages are intentionally simple server-rendered tables and forms; bulk import, audit logs, rich previews, moderation workflows, and version publishing workflows remain later work.
-- Phase 3 accepts reference image URLs and role assignments but does not upload, inspect, or store reference files yet.
+- Architecture Studio accepts reference image URLs and role assignments but does not upload, inspect, or store reference files yet.
 - Saved prompt packages do not debit tokens and do not create generation jobs.
-- Photography, Branding, Clips, Upscale, Audio, Community, and Competitions remain intentionally unavailable in the Phase 3 creation UI.
+- Photography, Branding, Clips, Upscale, Audio, Community, Competitions, Payments, and Marketplace remain intentionally unavailable in the Architecture-first MVP creation UI.
 - Provider keys, payment credentials, storage credentials, and production secrets must be configured outside the repository.
