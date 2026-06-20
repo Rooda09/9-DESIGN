@@ -1,74 +1,43 @@
-# AI Creative Control Platform — Codex Package
+# AI Creative Control Platform - Codex Package
 
-This package is designed to be uploaded or pasted into Codex as the implementation blueprint for a professional AI image, clip, prompt, scenario, audio, upscale, community, and admin-management platform.
+This repository is the implementation blueprint and foundation shell for a professional AI image, clip, prompt, scenario, audio, upscale, community, and admin-management platform.
 
 ## Product summary
 
 The platform has three primary domains:
 
-1. **Architecture** — image and clip generation with geometry preservation, boundary control, facade/interior/landscape control, material logic, view control, storytelling, upscale, and quality gates.
-2. **Photography** — commercial photography, product lock, lighting control, set/background generation, campaign variants, clip scenarios, upscale, and audio-backed product/video storytelling.
-3. **Branding** — brand identity, campaigns, visual systems, logo/monogram exploration, social/ad content, storytelling, brand memory, audio identity, upscale, and clip scenarios.
+1. Architecture - image and clip generation with geometry preservation, boundary control, facade/interior/landscape control, material logic, view control, storytelling, upscale, and quality gates.
+2. Photography - commercial photography, product lock, lighting control, set/background generation, campaign variants, clip scenarios, upscale, and audio-backed product/video storytelling.
+3. Branding - brand identity, campaigns, visual systems, logo/monogram exploration, social/ad content, storytelling, brand memory, audio identity, upscale, and clip scenarios.
 
-The platform should not behave like a simple prompt generator. It should behave like a **professional creative control system**:
+The platform should behave like a professional creative control system:
 
-**User choices + defaults + references + project memory → optimized engine-specific prompt package → generation job → quality gate → revision actions → saved library/community/competition.**
-
-## Included files
-
-- `CODEX_MASTER_PROMPT.md` — paste into Codex first.
-- `PRODUCT_REQUIREMENTS.md` — full product requirements.
-- `IMPLEMENTATION_ROADMAP.md` — phased build plan.
-- `docs/` — architecture, UI, API, engine, admin, token, audio, upscale, storytelling, and quality-gate specs.
-- `prisma/schema.prisma` — recommended relational schema.
-- `sql/schema.sql` — equivalent SQL-first schema draft.
-- `src/` — TypeScript starter modules for prompt compilation, engine routing, token costing, quality gates, audio, upscale, types, and API routes.
-- `scripts/import-workbook.ts` — importer plan for the Excel database.
-- `data/ai_creative_control_platform_database_v2_expanded.xlsx` — admin/database seed workbook.
-- `codex_tasks/` — ordered tasks for Codex implementation.
-
-## Recommended stack
-
-- Frontend: Next.js 15, React, TypeScript, Tailwind, shadcn/ui.
-- Backend: Next.js route handlers or NestJS if separated later.
-- Database: PostgreSQL + Prisma.
-- Auth: NextAuth/Auth.js or Supabase Auth.
-- Storage: S3-compatible storage for references, generated images, clips, audio, and thumbnails.
-- Queue: BullMQ + Redis or managed queue.
-- Payments/tokens: Stripe or equivalent.
-- AI integrations: adapter pattern for Midjourney, DALL·E/GPT Image, Flux, Stable Diffusion, Leonardo, Runway, Kling, Pika, Luma, VEO, WAN 2.6, plus admin-configurable audio and upscale providers.
-
-## How to use with Codex
-
-1. Open `CODEX_MASTER_PROMPT.md` and provide it to Codex with the whole package.
-2. Ask Codex to implement tasks in order from `codex_tasks/`.
-3. Start with database/auth/admin foundations before AI engine integration.
-4. Import the Excel workbook after the admin CMS and schema are ready.
-5. Do not hardcode all dropdowns in UI; store them in the database and let admin update them.
-
-## Critical product principles
-
-- Keep user-facing creation simple.
-- Keep admin/database structure deep.
-- Every dropdown option must support default value, best-for, English description, and Arabic description.
-- Prompts should usually stay under 2,000 characters.
-- Scenario and prompt libraries must be admin-updateable.
-- Users must have personal prompt libraries and clip scenario libraries.
-- Storytelling is mandatory across all domains.
-- Clips need optional audio-background generation and SFX direction.
-- Upscale must be a first-class step after image/clip generation.
-- Geometry Guard is the key architecture differentiator.
+User choices + defaults + references + project memory -> optimized engine-specific prompt package -> generation job -> quality gate -> revision actions -> saved library/community/competition.
 
 ## Phase 0 foundation status
 
-This repository is currently a validated foundation shell, not the full application. Phase 0 confirms:
+Phase 0 validated the foundation shell:
 
 - Next.js App Router + TypeScript source layout under `src/app`, `src/lib`, and `src/config`.
 - Prisma PostgreSQL schema under `prisma/schema.prisma` with Prisma 7 configuration in `prisma.config.ts`.
-- Local service defaults in `docker-compose.yml` for PostgreSQL and Redis.
+- Local PostgreSQL and Redis defaults in `docker-compose.yml`.
 - Environment examples in `.env.example`.
-- Excel workbook inspection scripts under `scripts/` for the uploaded seed workbook.
-- Placeholder routes for `/`, `/create`, `/admin`, and `/library`, plus API scaffolds for prompt compilation, admin dropdown options, and generation jobs.
+- Excel workbook inspection scripts under `scripts/`.
+- Placeholder routes for `/`, `/create`, `/admin`, and `/library`.
+
+## Phase 1 authentication and wallet status
+
+Phase 1 adds only authentication, user roles, profile, and token wallet foundations:
+
+- Credential signup and login with bcrypt password hashing.
+- Signed HttpOnly session cookie structure for login/logout.
+- Forgot-password request structure with hashed reset-token storage.
+- `USER` and `ADMIN` roles only.
+- One profile record per user.
+- Token wallet and token transaction history models.
+- Placeholder token refill flow that records pending refill transactions without payment integration.
+- Protected `/admin` page and admin API scaffold access.
+- Basic pages for login, register, forgot password, profile, token wallet, and admin dashboard.
 
 ## Local setup
 
@@ -78,45 +47,47 @@ This repository is currently a validated foundation shell, not the full applicat
    npm install
    ```
 
-2. Copy environment defaults and update secrets before production use:
+2. Copy environment defaults and update secrets:
 
    ```bash
    cp .env.example .env
    ```
 
-3. Start local services:
+3. Generate a strong auth secret and place it in `NEXTAUTH_SECRET`:
+
+   ```bash
+   node -e "console.log(require('crypto').randomBytes(32).toString('base64url'))"
+   ```
+
+4. Start local services:
 
    ```bash
    docker compose up -d postgres redis
    ```
 
-4. Validate the Prisma schema:
+5. Validate Prisma:
 
    ```bash
    npx prisma validate
    ```
 
-5. Create and apply the initial migration:
+6. Create or update the local migration:
 
    ```bash
-   npx prisma migrate dev --name init
+   npx prisma migrate dev --name phase_1_auth_wallet
    ```
 
-6. Generate Prisma Client:
+7. Generate Prisma Client:
 
    ```bash
    npm run prisma:generate
    ```
 
-7. Preview seed data structure:
+8. Run validation:
 
    ```bash
-   npm run seed
-   ```
-
-8. Inspect the uploaded Excel workbook structure:
-
-   ```bash
+   npm run test -- --run
+   npx tsc --noEmit
    npm run import:workbook
    npm run validate:prompts
    ```
@@ -127,14 +98,26 @@ This repository is currently a validated foundation shell, not the full applicat
    npm run dev
    ```
 
+## Admin access
+
+New registrations always create `USER` accounts. Promote an operator account manually after migration:
+
+```sql
+update "User" set role = 'ADMIN' where email = 'admin@example.com';
+```
+
+Admin-only routes redirect non-authenticated users to `/login` and non-admin users to `/profile`. Admin API scaffolds return `401` for unauthenticated requests and `403` for non-admin users.
+
 ## Migration notes
 
-- Prisma 7 reads the database URL from `prisma.config.ts`; keep `DATABASE_URL` in `.env` and do not re-add `url = env("DATABASE_URL")` to `prisma/schema.prisma`.
-- The first real database migration should be created with `npx prisma migrate dev --name init` after PostgreSQL is running.
-- Workbook import is still a Phase 11 full importer task. Phase 0 only validates that the workbook package is readable and that the import script has the expected mapping plan.
+- Prisma 7 reads `DATABASE_URL` from `prisma.config.ts`; keep the value in `.env`.
+- If the database is empty, run `npx prisma migrate dev --name phase_1_auth_wallet`.
+- If a Phase 0 migration already exists locally, create a new Phase 1 migration from the updated schema instead of editing the old migration.
+- The Phase 1 schema narrows roles to `USER` and `ADMIN`, adds `UserProfile`, strengthens password-reset storage, and adds transaction status/history fields.
 
-## Phase 0 assumptions and missing items
+## Remaining assumptions
 
-- Authentication, token debiting, queue workers, provider adapters, storage, and admin authorization are intentionally placeholders for later phases.
-- The Excel importer does not write to the database yet; it reports sheet structure and keeps the row mapping TODOs explicit.
-- Provider API keys, storage credentials, Stripe/payment credentials, and production secrets are intentionally absent from `.env.example` or blank placeholders.
+- Email delivery, password reset completion, MFA, OAuth, and production session rotation are not implemented yet.
+- Token refill is a payment placeholder only; pending refill transactions do not increase spendable balance.
+- AI engine integrations, community, competitions, and full admin database management remain out of scope.
+- Provider keys, payment credentials, storage credentials, and production secrets must be configured outside the repository.

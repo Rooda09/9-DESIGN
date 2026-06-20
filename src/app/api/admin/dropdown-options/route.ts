@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { z } from 'zod';
+import { requireApiAdmin } from '@/lib/auth/request';
 
 const optionSchema = z.object({
   groupId: z.string(),
@@ -15,18 +16,24 @@ const optionSchema = z.object({
   metadata: z.record(z.string(), z.any()).optional()
 });
 
-export async function GET() {
-  // TODO Codex: require admin, fetch from Prisma with group/domain filters.
+export async function GET(req: NextRequest) {
+  const auth = await requireApiAdmin(req);
+  if ('response' in auth) return auth.response;
+
+  // TODO Codex: fetch from Prisma with group/domain filters in the admin CMS phase.
   return NextResponse.json({ items: [], message: 'Admin dropdown options scaffold.' });
 }
 
 export async function POST(req: NextRequest) {
+  const auth = await requireApiAdmin(req);
+  if ('response' in auth) return auth.response;
+
   const json = await req.json();
   const parsed = optionSchema.safeParse(json);
   if (!parsed.success) {
     return NextResponse.json({ error: 'Invalid option', details: parsed.error.flatten() }, { status: 400 });
   }
 
-  // TODO Codex: require admin and create option in DB.
+  // TODO Codex: create option in DB during full admin database management.
   return NextResponse.json({ item: parsed.data, message: 'Create dropdown option scaffold.' }, { status: 201 });
 }

@@ -16,6 +16,7 @@
     "validate:prompts": "tsx scripts/validate-prompt-length.ts"
   },
   "dependencies": {
+    "@prisma/adapter-pg": "^7.8.0",
     "@prisma/client": "7.8.0",
     "bcryptjs": "latest",
     "bullmq": "latest",
@@ -23,6 +24,7 @@
     "jszip": "^3.10.1",
     "next": "latest",
     "next-auth": "latest",
+    "pg": "^8.16.3",
     "react": "latest",
     "react-dom": "latest",
     "zod": "latest"
