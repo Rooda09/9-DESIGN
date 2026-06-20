@@ -4,12 +4,12 @@ export default function HomePage() {
       <h1>AI Creative Control Platform</h1>
       <p>Professional AI image, clip, audio, upscale, prompt, scenario, community, and competition platform.</p>
       <p>
-        Phase 1 adds authentication, profile, and token wallet foundations. AI integrations and community features remain out of scope.
+        Phase 3 adds the Architecture Prompt Compiler MVP, Geometry Guard, engine-specific prompt packages, and save-to-library support. Real AI generation remains out of scope.
       </p>
       <p>
         <a href="/register">Create account</a> {' | '}
         <a href="/login">Log in</a> {' | '}
-        <a href="/tokens">View token wallet</a>
+        <a href="/create/architecture">Open Architecture studio</a>
       </p>
       <section>
         <h2>Main Domains</h2>

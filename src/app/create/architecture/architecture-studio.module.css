@@ -1,0 +1,405 @@
+.page {
+  min-height: calc(100vh - 58px);
+  padding: 34px;
+  background: #0b0e0f;
+  color: #edf2ee;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  gap: 28px;
+  max-width: 1480px;
+  margin: 0 auto 28px;
+}
+
+.header h1 {
+  max-width: 780px;
+  margin: 10px 0 12px;
+  font-size: 42px;
+  line-height: 1.08;
+}
+
+.backLink {
+  color: #a9bbb1;
+}
+
+.eyebrow {
+  margin: 18px 0 0;
+  color: #8eb09d;
+  font-size: 12px;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.intro {
+  max-width: 760px;
+  color: #aeb9b3;
+  line-height: 1.7;
+}
+
+.domainBadge {
+  display: grid;
+  align-content: center;
+  min-width: 220px;
+  padding: 18px;
+  border: 1px solid #34423b;
+  border-radius: 8px;
+  background: #131819;
+}
+
+.domainBadge span,
+.domainBadge small {
+  color: #93a198;
+}
+
+.domainBadge strong {
+  margin: 6px 0;
+  font-size: 22px;
+}
+
+.workspace {
+  display: grid;
+  grid-template-columns: minmax(0, 1.15fr) minmax(360px, 0.85fr);
+  gap: 18px;
+  max-width: 1480px;
+  margin: 0 auto;
+  align-items: start;
+}
+
+.controls,
+.preview {
+  display: grid;
+  gap: 14px;
+}
+
+.section,
+.preview {
+  border: 1px solid #293135;
+  border-radius: 8px;
+  background: #121617;
+}
+
+.section {
+  padding: 20px;
+}
+
+.sectionHeading {
+  display: flex;
+  gap: 14px;
+  margin-bottom: 18px;
+}
+
+.sectionHeading > span {
+  color: #87a994;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.sectionHeading h2,
+.previewHeader h2 {
+  margin: 0;
+  font-size: 21px;
+}
+
+.sectionHeading p {
+  margin: 5px 0 0;
+  color: #94a09a;
+}
+
+.field {
+  display: grid;
+  gap: 6px;
+  margin-bottom: 14px;
+  color: #dce4df;
+  font-weight: 650;
+}
+
+.field small {
+  color: #8f9a94;
+  font-weight: 400;
+  line-height: 1.45;
+}
+
+.field input,
+.field select,
+.field textarea {
+  width: 100%;
+  box-sizing: border-box;
+  padding: 11px 12px;
+  border: 1px solid #394245;
+  border-radius: 6px;
+  outline: none;
+  background: #0c1011;
+  color: #f2f5f3;
+  font: inherit;
+}
+
+.field input:focus,
+.field select:focus,
+.field textarea:focus {
+  border-color: #86a995;
+}
+
+.infoPanel,
+.optionIntelligence {
+  display: grid;
+  gap: 7px;
+  margin: 0 0 16px;
+  padding: 14px;
+  border-left: 3px solid #779984;
+  background: #0d1212;
+  color: #cbd5cf;
+}
+
+.infoPanel p,
+.optionIntelligence p {
+  margin: 0;
+  line-height: 1.55;
+}
+
+.choiceGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.choice {
+  display: grid;
+  gap: 6px;
+  padding: 14px;
+  border: 1px solid #30383b;
+  border-radius: 7px;
+  background: #0e1213;
+  cursor: pointer;
+}
+
+.choice input {
+  position: absolute;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.choice span {
+  color: #a7b5ad;
+}
+
+.choice small {
+  color: #89958f;
+  line-height: 1.45;
+}
+
+.choiceActive {
+  border-color: #89ad98;
+  background: #17201b;
+}
+
+.dropdownBlock {
+  padding: 15px 0;
+  border-top: 1px solid #293135;
+}
+
+.dropdownBlock:first-of-type {
+  border-top: 0;
+}
+
+.optionIntelligence > div {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.defaultTag {
+  padding: 3px 7px;
+  border: 1px solid #638370;
+  border-radius: 4px;
+  color: #a6c8b4;
+  font-size: 11px;
+  text-transform: uppercase;
+}
+
+.optionDirectory {
+  color: #a9b6af;
+}
+
+.optionDirectory summary {
+  cursor: pointer;
+}
+
+.optionDirectory > div {
+  display: grid;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.optionDirectory article {
+  display: grid;
+  gap: 5px;
+  padding: 12px;
+  border: 1px solid #2a3234;
+  border-radius: 6px;
+  background: #0d1112;
+}
+
+.optionDirectory p {
+  margin: 0;
+  line-height: 1.45;
+}
+
+.referenceGrid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.primaryButton,
+.actions button,
+.previewSection button {
+  padding: 10px 14px;
+  border: 1px solid #769883;
+  border-radius: 6px;
+  background: #789b86;
+  color: #07100b;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.primaryButton:disabled {
+  cursor: not-allowed;
+  opacity: 0.45;
+}
+
+.status,
+.notice {
+  color: #b5c4bc;
+}
+
+.preview {
+  position: sticky;
+  top: 16px;
+  max-height: calc(100vh - 32px);
+  overflow: auto;
+  padding: 18px;
+}
+
+.previewHeader {
+  display: flex;
+  justify-content: space-between;
+  gap: 14px;
+  align-items: center;
+}
+
+.score {
+  padding: 6px 9px;
+  border: 1px solid #5f806d;
+  border-radius: 5px;
+  color: #a8c8b5;
+}
+
+.previewEmpty {
+  display: grid;
+  place-content: center;
+  min-height: 260px;
+  border: 1px dashed #394245;
+  color: #99a59f;
+  text-align: center;
+}
+
+.previewSection {
+  padding: 14px;
+  border: 1px solid #293135;
+  border-radius: 7px;
+  background: #0c1011;
+}
+
+.previewSection > div {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  align-items: center;
+}
+
+.previewSection h3 {
+  margin: 0 0 8px;
+  font-size: 14px;
+  color: #a6c0b2;
+  text-transform: uppercase;
+}
+
+.previewSection p,
+.previewSection li {
+  color: #d7dfda;
+  line-height: 1.6;
+  white-space: pre-wrap;
+}
+
+.previewSection p,
+.previewSection ul {
+  margin: 0;
+}
+
+.previewSection button {
+  padding: 5px 8px;
+  background: transparent;
+  color: #a7c5b4;
+  font-size: 12px;
+}
+
+.actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.actions button {
+  background: transparent;
+  color: #bad0c3;
+}
+
+.savePanel {
+  padding-top: 14px;
+  border-top: 1px solid #293135;
+}
+
+.emptyState {
+  max-width: 720px;
+  margin: 70px auto;
+  padding: 24px;
+  border: 1px solid #34423b;
+  border-radius: 8px;
+  background: #131819;
+}
+
+.emptyState a {
+  color: #9fc1ad;
+}
+
+@media (max-width: 980px) {
+  .workspace {
+    grid-template-columns: 1fr;
+  }
+
+  .preview {
+    position: static;
+    max-height: none;
+  }
+}
+
+@media (max-width: 680px) {
+  .page {
+    padding: 22px 14px;
+  }
+
+  .header {
+    display: grid;
+  }
+
+  .header h1 {
+    font-size: 34px;
+  }
+
+  .choiceGrid,
+  .referenceGrid {
+    grid-template-columns: 1fr;
+  }
+}

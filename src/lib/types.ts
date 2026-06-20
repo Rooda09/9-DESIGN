@@ -1,8 +1,17 @@
 export type DomainKey = 'ARCHITECTURE' | 'PHOTOGRAPHY' | 'BRANDING';
 export type EngineType = 'IMAGE' | 'CLIP' | 'AUDIO' | 'UPSCALE';
 export type JobType = 'IMAGE_GENERATION' | 'CLIP_GENERATION' | 'AUDIO_GENERATION' | 'IMAGE_UPSCALE' | 'CLIP_UPSCALE';
+export type GeometryGuardMode =
+  | 'FIXED_GEOMETRY'
+  | 'SEMI_FIXED_GEOMETRY'
+  | 'FREE_CONCEPT'
+  | 'FACADE_ONLY'
+  | 'MATERIAL_ONLY'
+  | 'INTERIOR_FINISH_ONLY'
+  | 'LANDSCAPE_ONLY';
 
 export interface DropdownSelection {
+  optionId?: string;
   groupKey: string;
   value: string;
   label?: string;
@@ -18,6 +27,7 @@ export interface ReferenceAssetInput {
     | 'MATERIAL_REFERENCE'
     | 'LIGHTING_REFERENCE'
     | 'CAMERA_REFERENCE'
+    | 'MOOD_REFERENCE'
     | 'BRAND_REFERENCE'
     | 'PRODUCT_REFERENCE'
     | 'MOTION_REFERENCE';
@@ -26,8 +36,12 @@ export interface ReferenceAssetInput {
 
 export interface PromptCompileInput {
   domain: DomainKey;
+  templateId?: string;
+  templateTitle?: string;
+  templateDescription?: string;
   workflowType: string;
   engineKey: string;
+  geometryGuard?: GeometryGuardMode;
   userBrief?: string;
   selections: DropdownSelection[];
   references?: ReferenceAssetInput[];
@@ -68,6 +82,7 @@ export interface PromptPackage {
   negativePrompt: string;
   enginePrompt: string;
   referenceInstructions: string[];
+  geometryInstructions: string[];
   lockInstructions: string[];
   storyPrompt?: string;
   audioPrompt?: string;
