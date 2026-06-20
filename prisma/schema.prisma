@@ -1,0 +1,385 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  USER
+  ADMIN
+  MODERATOR
+}
+
+enum DomainKey {
+  ARCHITECTURE
+  PHOTOGRAPHY
+  BRANDING
+}
+
+enum EngineType {
+  IMAGE
+  CLIP
+  AUDIO
+  UPSCALE
+}
+
+enum JobType {
+  IMAGE_GENERATION
+  CLIP_GENERATION
+  AUDIO_GENERATION
+  IMAGE_UPSCALE
+  CLIP_UPSCALE
+}
+
+enum JobStatus {
+  DRAFT
+  QUEUED
+  RUNNING
+  COMPLETED
+  FAILED
+  CANCELLED
+}
+
+enum Visibility {
+  PRIVATE
+  PUBLIC_OUTPUT_ONLY
+  PUBLIC_PROMPT_PREVIEW
+  FULL_REMIX
+  PAID_TEMPLATE
+}
+
+enum TokenTransactionType {
+  REFILL
+  SPEND
+  REFUND
+  ADMIN_ADJUSTMENT
+  SUBSCRIPTION_GRANT
+}
+
+model User {
+  id              String   @id @default(cuid())
+  email           String   @unique
+  username        String   @unique
+  displayName     String?
+  passwordHash    String
+  role            UserRole @default(USER)
+  avatarUrl       String?
+  bio             String?
+  isEmailVerified Boolean  @default(false)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  wallet          TokenWallet?
+  transactions    TokenTransaction[]
+  projects        Project[]
+  userPrompts     UserPrompt[]
+  userScenarios   UserScenario[]
+  assets          GeneratedAsset[]
+  jobs            GenerationJob[]
+  communityPosts  CommunityPost[]
+  competitionSubmissions CompetitionSubmission[]
+}
+
+model PasswordResetToken {
+  id        String   @id @default(cuid())
+  email     String
+  tokenHash String
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime @default(now())
+}
+
+model TokenWallet {
+  id        String   @id @default(cuid())
+  userId    String   @unique
+  balance   Int      @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model TokenTransaction {
+  id          String @id @default(cuid())
+  userId      String
+  type        TokenTransactionType
+  amount      Int
+  balanceAfter Int
+  description String?
+  providerRef String?
+  createdAt   DateTime @default(now())
+  user        User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Domain {
+  id          String @id @default(cuid())
+  key         DomainKey @unique
+  labelEn     String
+  labelAr     String
+  descriptionEn String?
+  descriptionAr String?
+  isActive    Boolean @default(true)
+  sortOrder   Int @default(0)
+  dropdownGroups DropdownGroup[]
+  templates   Template[]
+  promptTemplates PromptTemplate[]
+  clipScenarios ClipScenario[]
+}
+
+model DropdownGroup {
+  id          String @id @default(cuid())
+  domainId    String?
+  key         String @unique
+  labelEn     String
+  labelAr     String
+  descriptionEn String?
+  descriptionAr String?
+  isRequired  Boolean @default(false)
+  isAdvanced  Boolean @default(false)
+  sortOrder   Int @default(0)
+  isActive    Boolean @default(true)
+  domain      Domain? @relation(fields: [domainId], references: [id])
+  options     DropdownOption[]
+}
+
+model DropdownOption {
+  id            String @id @default(cuid())
+  groupId       String
+  value         String
+  labelEn       String
+  labelAr       String
+  bestFor       String?
+  descriptionEn String?
+  descriptionAr String?
+  isDefault     Boolean @default(false)
+  isActive      Boolean @default(true)
+  sortOrder     Int @default(0)
+  metadata      Json?
+  group         DropdownGroup @relation(fields: [groupId], references: [id], onDelete: Cascade)
+  @@unique([groupId, value])
+}
+
+model AIEngine {
+  id          String @id @default(cuid())
+  key         String @unique
+  name        String
+  type        EngineType
+  provider    String?
+  isActive    Boolean @default(true)
+  supportsImageToImage Boolean @default(false)
+  supportsTextToImage  Boolean @default(false)
+  supportsImageToVideo Boolean @default(false)
+  supportsTextToVideo  Boolean @default(false)
+  supportsAudio        Boolean @default(false)
+  supportsUpscale      Boolean @default(false)
+  supportsReferenceLock Boolean @default(false)
+  defaultTokenCost Int @default(0)
+  config      Json?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+model Template {
+  id          String @id @default(cuid())
+  domainId    String
+  key         String
+  titleEn     String
+  titleAr     String
+  bestFor     String?
+  descriptionEn String?
+  descriptionAr String?
+  workflowType String
+  defaultEngineKey String?
+  defaultDropdowns Json?
+  isPublished Boolean @default(false)
+  version     Int @default(1)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  domain      Domain @relation(fields: [domainId], references: [id])
+}
+
+model PromptTemplate {
+  id          String @id @default(cuid())
+  domainId    String
+  key         String
+  titleEn     String
+  titleAr     String?
+  category    String
+  bestFor     String?
+  descriptionEn String?
+  descriptionAr String?
+  promptBody  String
+  negativePrompt String?
+  engineHints Json?
+  maxCharacters Int @default(2000)
+  isPublished Boolean @default(false)
+  version     Int @default(1)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  domain      Domain @relation(fields: [domainId], references: [id])
+}
+
+model ClipScenario {
+  id          String @id @default(cuid())
+  domainId    String
+  key         String
+  titleEn     String
+  titleAr     String?
+  category    String
+  style       String?
+  bestFor     String?
+  descriptionEn String?
+  descriptionAr String?
+  scenarioPrompt String
+  storyArc    String?
+  cameraMotion String?
+  durationSeconds Int @default(8)
+  audioRequired Boolean @default(false)
+  audioMood   String?
+  audioPrompt String?
+  sfxDirection String?
+  voiceoverUse String?
+  engineHints Json?
+  maxCharacters Int @default(2000)
+  isPublished Boolean @default(false)
+  version     Int @default(1)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  domain      Domain @relation(fields: [domainId], references: [id])
+}
+
+model Project {
+  id        String @id @default(cuid())
+  userId    String
+  name      String
+  domainKey DomainKey?
+  description String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  user      User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  prompts   UserPrompt[]
+  scenarios UserScenario[]
+  assets    GeneratedAsset[]
+}
+
+model UserPrompt {
+  id          String @id @default(cuid())
+  userId      String
+  projectId   String?
+  title       String
+  domainKey   DomainKey
+  promptBody  String
+  negativePrompt String?
+  compiledPackage Json?
+  sourceTemplateId String?
+  visibility Visibility @default(PRIVATE)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  user        User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  project     Project? @relation(fields: [projectId], references: [id])
+}
+
+model UserScenario {
+  id          String @id @default(cuid())
+  userId      String
+  projectId   String?
+  title       String
+  domainKey   DomainKey
+  scenarioBody String
+  audioPrompt String?
+  compiledPackage Json?
+  sourceScenarioId String?
+  visibility Visibility @default(PRIVATE)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  user        User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  project     Project? @relation(fields: [projectId], references: [id])
+}
+
+model GenerationJob {
+  id          String @id @default(cuid())
+  userId      String
+  projectId   String?
+  jobType     JobType
+  status      JobStatus @default(DRAFT)
+  domainKey   DomainKey
+  engineKey   String
+  tokenCost   Int @default(0)
+  promptPackage Json
+  errorMessage String?
+  providerJobId String?
+  startedAt   DateTime?
+  completedAt DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+  user        User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  assets      GeneratedAsset[]
+}
+
+model GeneratedAsset {
+  id          String @id @default(cuid())
+  userId      String
+  projectId   String?
+  jobId       String?
+  domainKey   DomainKey
+  assetType   String
+  url         String
+  thumbnailUrl String?
+  metadata    Json?
+  qualityScore Int?
+  visibility  Visibility @default(PRIVATE)
+  createdAt   DateTime @default(now())
+  user        User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  project     Project? @relation(fields: [projectId], references: [id])
+  job         GenerationJob? @relation(fields: [jobId], references: [id])
+  communityPost CommunityPost?
+}
+
+model CommunityPost {
+  id          String @id @default(cuid())
+  userId      String
+  assetId     String @unique
+  title       String
+  description String?
+  visibility  Visibility @default(PUBLIC_OUTPUT_ONLY)
+  remixAllowed Boolean @default(false)
+  likesCount  Int @default(0)
+  savesCount  Int @default(0)
+  isFeatured  Boolean @default(false)
+  moderationStatus String @default("PENDING")
+  createdAt   DateTime @default(now())
+  user        User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  asset       GeneratedAsset @relation(fields: [assetId], references: [id], onDelete: Cascade)
+}
+
+model Competition {
+  id          String @id @default(cuid())
+  titleEn     String
+  titleAr     String?
+  domainKey   DomainKey
+  category    String
+  rulesEn     String
+  rulesAr     String?
+  startsAt    DateTime
+  endsAt      DateTime
+  isActive    Boolean @default(true)
+  createdAt   DateTime @default(now())
+  submissions CompetitionSubmission[]
+}
+
+model CompetitionSubmission {
+  id            String @id @default(cuid())
+  competitionId String
+  userId        String
+  assetId       String
+  title         String
+  description   String?
+  publicScore   Float?
+  judgeScore    Float?
+  finalScore    Float?
+  createdAt     DateTime @default(now())
+  competition   Competition @relation(fields: [competitionId], references: [id], onDelete: Cascade)
+  user          User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
