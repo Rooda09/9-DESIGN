@@ -1,6 +1,6 @@
 # Architecture Studio MVP - Codex Package
 
-This repository currently focuses on an Architecture-first MVP: a professional prompt compiler, Geometry Guard, reference roles, an Architecture Clip Scenario Builder, engine-specific prompt packages, and private prompt/scenario library saves.
+This repository currently focuses on an Architecture-first MVP: a professional prompt compiler, Geometry Guard, reference roles, an Architecture Clip Scenario Builder, Architecture Upscale and Clip Audio prompt workflows, engine-specific prompt packages, and private prompt/scenario library saves.
 
 ## Architecture-first MVP summary
 
@@ -8,14 +8,16 @@ The active MVP domain is Architecture.
 
 1. Architecture Studio - active MVP route for database-backed templates, dropdown defaults, Geometry Guard, reference roles, prompt package preview, and private save-to-library.
 2. Architecture Clip Scenario Builder - active planning route for short Architecture clips, camera movement, continuity controls, engine-specific video prompts, and private scenario saves.
-3. Photography - Coming Soon placeholder only; no user creation flow is implemented.
-4. Branding - Coming Soon placeholder only; no user creation flow is implemented.
+3. Architecture Upscale - active planning route for render enhancement prompts, preservation controls, negative upscale prompts, and private prompt saves.
+4. Architecture Clip Audio - active planning route for background audio prompts, SFX direction, timing notes, loop guidance, and private scenario saves.
+5. Photography - Coming Soon placeholder only; no user creation flow is implemented.
+6. Branding - Coming Soon placeholder only; no user creation flow is implemented.
 
 The MVP should behave like a professional Architecture prompt control system:
 
-Architecture template + admin dropdown defaults + Geometry Guard + reference roles + project brief -> optimized engine-specific prompt package -> quality checklist -> private user library.
+Architecture template + admin dropdown defaults + Geometry Guard + reference roles + project brief + optional Architecture upscale/audio planning controls -> optimized prompt package -> quality checklist -> private user library.
 
-Real AI image/video generation, Photography, Branding, Community, Competitions, Payments, Marketplace, general multi-domain clips, Upscale, and Audio workflows are intentionally out of scope for this MVP pass.
+Real AI image/video/audio generation, provider upscale execution, Photography, Branding, Community, Competitions, Payments, Marketplace, and general multi-domain clip/upscale/audio workflows are intentionally out of scope for this MVP pass.
 
 ## Phase 0 foundation status
 
@@ -119,6 +121,24 @@ Phase 4B adds an Architecture-only short-clip planning workflow without provider
 
 Phase 4B does not call video APIs, upload source media, create generation jobs, charge tokens, generate audio, or expand clips into Photography or Branding.
 
+## Phase 4C Architecture Upscale and Clip Audio status
+
+Phase 4C adds Architecture-only upscale and audio-background prompt workflows without provider execution.
+
+- Adds `/create/architecture/upscale` for enhancing architectural images and renders through prompt planning only.
+- Adds upscale intent options for render realism, facade detail sharpening, material texture, lighting and shadows, AI artifact cleanup, presentation boards, social media, and client marketing.
+- Adds image quality controls for geometry preservation, facade detail preservation, material fidelity, edge sharpness, noise/artifact reduction, lighting balance, realistic scale, and no new unwanted elements.
+- Compiles upscale objective, preservation instructions, enhancement instructions, negative upscale prompt, output format notes, and a quality checklist.
+- Saves authenticated upscale packages privately to the existing `UserPrompt` model through `/api/library/upscale-prompts`.
+- Adds `/create/architecture/audio` for Architecture clip background audio prompt planning.
+- Adds audio mood options for cinematic ambient, luxury calm, futuristic minimal, warm residential, urban commercial, desert atmosphere, night architectural reveal, and gallery / museum calm.
+- Adds SFX direction options for subtle wind, soft footsteps, city ambience, water feature, distant traffic, interior room tone, soft mechanical hum, and no SFX.
+- Compiles background audio prompt, SFX direction, voiceover placeholder, timing notes, loop/seamless instruction, and negative audio prompt.
+- Saves authenticated audio prompt packages privately to the existing `UserScenario` model through `/api/library/audio-prompts`.
+- Seeds Architecture-only upscale settings plus audio mood/SFX setting records through the existing Phase 2 admin data models.
+
+Phase 4C does not upload source images, generate audio files, call image/video/audio/upscale providers, create generation jobs, charge tokens, or implement Photography, Branding, Community, Payments, or Marketplace features.
+
 ## Local setup
 
 1. Install dependencies:
@@ -157,7 +177,7 @@ Phase 4B does not call video APIs, upload source media, create generation jobs, 
    npx prisma migrate dev --name phase_2_admin_database_management
    ```
 
-   The Architecture-first MVP cleanup and Phase 4B do not require a new migration because they reuse the Phase 1 `UserPrompt`/`UserScenario` models and Phase 2 admin data models.
+   The Architecture-first MVP cleanup and Phases 4B/4C do not require a new migration because they reuse the Phase 1 `UserPrompt`/`UserScenario` models and Phase 2 admin data models.
 
 7. Generate Prisma Client:
 
@@ -200,8 +220,9 @@ Admin-only routes redirect non-authenticated users to `/login` and non-admin use
 - If Phase 0 and Phase 1 migrations already exist locally, create a new Phase 2 migration from the updated schema instead of editing old migrations.
 - The Phase 1 schema narrows roles to `USER` and `ADMIN`, adds `UserProfile`, strengthens password-reset storage, and adds transaction status/history fields.
 - The Phase 2 schema adds upscale and audio background category/setting tables for admin-managed provider settings.
-- The Architecture-first MVP cleanup, Phase 4A database quality pass, and Phase 4B Clip Scenario Builder have no schema change.
+- The Architecture-first MVP cleanup, Phase 4A database quality pass, Phase 4B Clip Scenario Builder, and Phase 4C Architecture Upscale/Audio Prompt workflows have no schema change.
 - Phase 4B uses the existing `ClipScenario`, `UserScenario`, and `AIEngine` models. Run `npm run seed` to upsert the ten Architecture clip scenarios and three placeholder clip-engine records.
+- Phase 4C uses the existing `UpscaleSetting`, `AudioBackgroundSetting`, `UserPrompt`, and `UserScenario` models. Run `npm run seed` to upsert Architecture-only upscale intents, audio moods, and SFX directions.
 - Template defaults may be stored in `Template.defaultDropdowns` as a JSON object keyed by dropdown group key.
 - Optional dropdown prompt fragments may be stored in `DropdownOption.metadata.promptFragment`.
 - Phase 4A seed data stores curated Architecture prompt fragments in `DropdownOption.metadata.promptFragment` and prompt-template engine hints in `PromptTemplate.engineHints`.
@@ -215,6 +236,8 @@ Admin-only routes redirect non-authenticated users to `/login` and non-admin use
 - Architecture Studio accepts reference image URLs and role assignments but does not upload, inspect, or store reference files yet.
 - Saved prompt packages do not debit tokens and do not create generation jobs.
 - Saved clip scenario packages do not call video providers, debit tokens, upload media, or create generation jobs.
-- Architecture clip planning is available, but generated clip outputs, audio, timeline editing, source-image upload, and provider job polling remain future work.
-- Photography, Branding, general multi-domain clips, Upscale, Audio, Community, Competitions, Payments, and Marketplace remain intentionally unavailable.
+- Saved upscale packages do not call upscale providers, debit tokens, upload source images, or create generation jobs.
+- Saved audio prompt packages do not call audio providers, debit tokens, generate audio files, or create generation jobs.
+- Architecture clip planning and Architecture audio prompt planning are available, but generated clip/audio outputs, timeline editing, source-image upload, and provider job polling remain future work.
+- Photography, Branding, general multi-domain clips/upscale/audio, Community, Competitions, Payments, and Marketplace remain intentionally unavailable.
 - Provider keys, payment credentials, storage credentials, and production secrets must be configured outside the repository.

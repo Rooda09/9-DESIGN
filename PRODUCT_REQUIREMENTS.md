@@ -4,7 +4,7 @@
 
 A professional AI creative control platform that helps architects, photographers, brand specialists, and marketers create optimized prompts, images, clips, audio-backed scenes, upscaled outputs, reusable scenarios, and community-shared workflows.
 
-Current MVP scope: Architecture Studio first. The implemented user creation flow is Architecture only, focused on database-backed templates, dropdown defaults, Geometry Guard, reference roles, prompt package preview, and private prompt-library saves. Photography, Branding, Community, Competitions, Payments, Marketplace, real AI generation, Clips, Upscale, and Audio remain future placeholders unless explicitly implemented in later phases.
+Current MVP scope: Architecture Studio first. The implemented user flows are the database-backed Architecture Prompt Compiler, the Architecture-only Clip Scenario Builder, Architecture Upscale prompt planning, and Architecture Clip Audio prompt planning. They support Geometry Guard, reference roles, prompt previews, clip storytelling, camera movement, continuity planning, image preservation controls, audio mood/SFX direction, engine-specific packages, and private prompt/scenario saves. Photography, Branding, Community, Competitions, Payments, Marketplace, real AI generation, provider upscale execution, audio generation, and general multi-domain clips/upscale/audio remain future placeholders unless explicitly implemented in later phases.
 
 ## 2. Main domains
 
@@ -162,9 +162,113 @@ Each generation should create:
 - VEO
 - WAN 2.6
 
+### Phase 4B Architecture clip scope
+
+The Architecture Clip Scenario Builder is available at `/create/architecture/clips`.
+
+Required scenario types:
+
+- Exterior reveal
+- Facade orbit
+- Slow dolly-in
+- Interior walkthrough
+- Landscape flythrough
+- Material close-up
+- Day-to-night transition
+- Before/after renovation
+- Aerial site reveal
+- Cinematic real estate teaser
+
+Each compiled Architecture clip package contains:
+
+- Scenario title
+- Storytelling prompt
+- Opening, focus, camera, atmosphere, detail, and closing shot list
+- Camera movement prompt
+- Architecture continuity instructions
+- Negative video prompt
+- Engine-specific video prompt
+- Architecture quality checklist
+
+Phase 4B compiles and stores private planning records only. It does not call a video provider, create a generation job, charge tokens, upload media, or produce a clip file.
+
 ## 10. Audio and upscale
 
 Audio engines and upscale engines must be admin-configurable. Do not hardcode vendor dependencies in the database model.
+
+### Phase 4C Architecture upscale scope
+
+The Architecture Upscale workflow is available at `/create/architecture/upscale`.
+
+Required upscale intent options:
+
+- Enhance render realism
+- Sharpen facade details
+- Improve material texture
+- Improve lighting and shadows
+- Clean AI artifacts
+- Upscale for presentation board
+- Upscale for social media
+- Upscale for client marketing
+
+Required image quality controls:
+
+- Geometry preservation
+- Facade detail preservation
+- Material fidelity
+- Edge sharpness
+- Noise/artifact reduction
+- Lighting balance
+- Realistic scale
+- No new unwanted elements
+
+Each compiled Architecture upscale package contains:
+
+- Upscale objective
+- Preservation instructions
+- Enhancement instructions
+- Negative upscale prompt
+- Output format notes
+- Quality checklist
+
+Phase 4C upscale compiles and stores private planning records only. It does not upload source images, call an upscale provider, create a generation job, charge tokens, or produce an image file.
+
+### Phase 4C Architecture clip audio scope
+
+The Architecture Clip Audio Prompt workflow is available at `/create/architecture/audio`.
+
+Required audio mood options:
+
+- Cinematic ambient
+- Luxury calm
+- Futuristic minimal
+- Warm residential
+- Urban commercial
+- Desert atmosphere
+- Night architectural reveal
+- Gallery / museum calm
+
+Required SFX direction options:
+
+- Subtle wind
+- Soft footsteps
+- City ambience
+- Water feature
+- Distant traffic
+- Interior room tone
+- Soft mechanical hum
+- No SFX
+
+Each compiled Architecture audio prompt package contains:
+
+- Background audio prompt
+- SFX direction
+- Voiceover placeholder
+- Timing notes
+- Loop/seamless instruction
+- Negative audio prompt
+
+Phase 4C audio compiles and stores private planning records only. It does not call an audio provider, create a generation job, charge tokens, produce an audio file, or add non-Architecture clip workflows.
 
 ## 11. Community
 
