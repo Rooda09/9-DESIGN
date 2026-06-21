@@ -1,20 +1,21 @@
 # Architecture Studio MVP - Codex Package
 
-This repository currently focuses on an Architecture-first MVP: a professional prompt compiler for Architecture Studio, Geometry Guard, reference roles, engine-specific prompt packages, and private prompt-library saves.
+This repository currently focuses on an Architecture-first MVP: a professional prompt compiler, Geometry Guard, reference roles, an Architecture Clip Scenario Builder, engine-specific prompt packages, and private prompt/scenario library saves.
 
 ## Architecture-first MVP summary
 
 The active MVP domain is Architecture.
 
 1. Architecture Studio - active MVP route for database-backed templates, dropdown defaults, Geometry Guard, reference roles, prompt package preview, and private save-to-library.
-2. Photography - Coming Soon placeholder only; no user creation flow is implemented.
-3. Branding - Coming Soon placeholder only; no user creation flow is implemented.
+2. Architecture Clip Scenario Builder - active planning route for short Architecture clips, camera movement, continuity controls, engine-specific video prompts, and private scenario saves.
+3. Photography - Coming Soon placeholder only; no user creation flow is implemented.
+4. Branding - Coming Soon placeholder only; no user creation flow is implemented.
 
 The MVP should behave like a professional Architecture prompt control system:
 
 Architecture template + admin dropdown defaults + Geometry Guard + reference roles + project brief -> optimized engine-specific prompt package -> quality checklist -> private user library.
 
-Real AI image generation, Photography, Branding, Community, Competitions, Payments, Marketplace, Clips, Upscale, and Audio workflows are intentionally out of scope for this MVP pass.
+Real AI image/video generation, Photography, Branding, Community, Competitions, Payments, Marketplace, general multi-domain clips, Upscale, and Audio workflows are intentionally out of scope for this MVP pass.
 
 ## Phase 0 foundation status
 
@@ -98,7 +99,25 @@ Phase 4A improves Architecture Studio content quality without adding new product
 - Adds `npm run seed -- --preview` for offline count inspection and `npm run validate:architecture` for offline Architecture data validation.
 - Strengthens Architecture negative-prompt logic with database-selected negative constraints and adds an Architecture-specific quality checklist.
 
-Phase 4A still does not call real AI generation providers, create generation jobs, debit tokens, or implement Photography, Branding, Community, Competitions, Payments, Marketplace, Clips, Upscale, or Audio workflows.
+Phase 4A itself did not call real AI generation providers, create generation jobs, debit tokens, or implement non-Architecture domains. Architecture clip planning is introduced separately in Phase 4B below.
+
+## Phase 4B Architecture Clip Scenario Builder status
+
+Phase 4B adds an Architecture-only short-clip planning workflow without provider execution.
+
+- Adds `/create/architecture/clips` as the Architecture Clip Scenario Builder route.
+- Adds ten curated scenario types: exterior reveal, facade orbit, slow dolly-in, interior walkthrough, landscape flythrough, material close-up, day-to-night transition, before/after renovation, aerial site reveal, and cinematic real estate teaser.
+- Adds editable storytelling fields for opening shot, subject focus, camera movement, atmosphere, architectural detail, and closing shot.
+- Adds slow dolly-in, orbit, crane up, top-down reveal, parallax slide, handheld cinematic, and static hero camera controls.
+- Adds Kling, Veo, and WAN 2.6 prompt-format placeholders plus 5, 8, 10, 15, and 20 second durations.
+- Adds continuity controls for building geometry, facade openings, material palette, lighting mood, and camera direction.
+- Compiles scenario title, storytelling prompt, six-part shot list, camera prompt, continuity instructions, negative video prompt, engine-specific prompt, and Architecture quality checklist.
+- Keeps engine-specific video prompts at or below 2,000 characters.
+- Saves authenticated results privately to the existing `UserScenario` model through `/api/library/scenarios`.
+- Seeds ten `ClipScenario` records and three CLIP engine records. Kling uses the database key `kling_video` to avoid conflicting with the existing image-engine record.
+- Uses curated fallback scenario data when PostgreSQL is unavailable, while clearly marking the source in the UI.
+
+Phase 4B does not call video APIs, upload source media, create generation jobs, charge tokens, generate audio, or expand clips into Photography or Branding.
 
 ## Local setup
 
@@ -138,7 +157,7 @@ Phase 4A still does not call real AI generation providers, create generation job
    npx prisma migrate dev --name phase_2_admin_database_management
    ```
 
-   The Architecture-first MVP cleanup does not require a new migration because it reuses the Phase 1 `UserPrompt` model and Phase 2 admin data models.
+   The Architecture-first MVP cleanup and Phase 4B do not require a new migration because they reuse the Phase 1 `UserPrompt`/`UserScenario` models and Phase 2 admin data models.
 
 7. Generate Prisma Client:
 
@@ -181,7 +200,8 @@ Admin-only routes redirect non-authenticated users to `/login` and non-admin use
 - If Phase 0 and Phase 1 migrations already exist locally, create a new Phase 2 migration from the updated schema instead of editing old migrations.
 - The Phase 1 schema narrows roles to `USER` and `ADMIN`, adds `UserProfile`, strengthens password-reset storage, and adds transaction status/history fields.
 - The Phase 2 schema adds upscale and audio background category/setting tables for admin-managed provider settings.
-- The Architecture-first MVP cleanup and Phase 4A database quality pass have no schema change. They require at least one active Architecture domain, one published Architecture template, and active Architecture dropdown groups/options.
+- The Architecture-first MVP cleanup, Phase 4A database quality pass, and Phase 4B Clip Scenario Builder have no schema change.
+- Phase 4B uses the existing `ClipScenario`, `UserScenario`, and `AIEngine` models. Run `npm run seed` to upsert the ten Architecture clip scenarios and three placeholder clip-engine records.
 - Template defaults may be stored in `Template.defaultDropdowns` as a JSON object keyed by dropdown group key.
 - Optional dropdown prompt fragments may be stored in `DropdownOption.metadata.promptFragment`.
 - Phase 4A seed data stores curated Architecture prompt fragments in `DropdownOption.metadata.promptFragment` and prompt-template engine hints in `PromptTemplate.engineHints`.
@@ -194,5 +214,7 @@ Admin-only routes redirect non-authenticated users to `/login` and non-admin use
 - Phase 2 CRUD pages are intentionally simple server-rendered tables and forms; bulk import, audit logs, rich previews, moderation workflows, and version publishing workflows remain later work.
 - Architecture Studio accepts reference image URLs and role assignments but does not upload, inspect, or store reference files yet.
 - Saved prompt packages do not debit tokens and do not create generation jobs.
-- Photography, Branding, Clips, Upscale, Audio, Community, Competitions, Payments, and Marketplace remain intentionally unavailable in the Architecture-first MVP creation UI.
+- Saved clip scenario packages do not call video providers, debit tokens, upload media, or create generation jobs.
+- Architecture clip planning is available, but generated clip outputs, audio, timeline editing, source-image upload, and provider job polling remain future work.
+- Photography, Branding, general multi-domain clips, Upscale, Audio, Community, Competitions, Payments, and Marketplace remain intentionally unavailable.
 - Provider keys, payment credentials, storage credentials, and production secrets must be configured outside the repository.
