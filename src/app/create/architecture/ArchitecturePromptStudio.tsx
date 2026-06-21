@@ -7,6 +7,7 @@ import type {
   ArchitectureDropdownGroupRecord,
   ArchitectureTemplateRecord
 } from '@/lib/architecture/data';
+import type { ArchitectureGeneratorKey } from '@/lib/architecture/generators';
 import {
   initialArchitectureSelections,
   selectableArchitectureGroups,
@@ -62,7 +63,9 @@ function selectionSource(
 }
 
 export function ArchitecturePromptStudio({ data }: { data: ArchitectureCreationData }) {
-  const firstTemplate = data.templates[0];
+  const firstSection = data.sections[0];
+  const firstTemplate = firstSection?.templates[0] ?? data.templates[0];
+  const [activeSectionKey, setActiveSectionKey] = useState(firstSection?.key ?? 'plan_generator');
   const [templateId, setTemplateId] = useState(firstTemplate?.id ?? '');
   const [engineKey, setEngineKey] = useState<ArchitectureEngineKey>(
     firstTemplate?.defaultEngineKey && isArchitectureEngineKey(firstTemplate.defaultEngineKey)
@@ -72,21 +75,46 @@ export function ArchitecturePromptStudio({ data }: { data: ArchitectureCreationD
   const [geometryGuard, setGeometryGuard] = useState<GeometryGuardMode>('SEMI_FIXED_GEOMETRY');
   const [brief, setBrief] = useState('');
   const [promptTitle, setPromptTitle] = useState(firstTemplate?.titleEn ?? 'Architecture prompt');
-  const [selections, setSelections] = useState<ArchitectureSelectionState>(() => initialArchitectureSelections(firstTemplate, data.groups));
+  const [selections, setSelections] = useState<ArchitectureSelectionState>(() =>
+    initialArchitectureSelections(firstTemplate, firstSection?.groups ?? data.groups)
+  );
   const [references, setReferences] = useState<ReferenceState>(EMPTY_REFERENCES);
   const [result, setResult] = useState<CompileResponse | null>(null);
   const [status, setStatus] = useState('');
   const [isCompiling, setIsCompiling] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
 
-  const groups = useMemo(() => selectableArchitectureGroups(data.groups), [data.groups]);
+  const activeSection = useMemo(
+    () => data.sections.find(section => section.key === activeSectionKey) ?? data.sections[0],
+    [activeSectionKey, data.sections]
+  );
+  const availableTemplates = activeSection?.templates ?? data.templates;
+  const activeGroups = activeSection?.groups ?? data.groups;
+  const groups = useMemo(() => selectableArchitectureGroups(activeGroups), [activeGroups]);
   const selectedTemplate = data.templates.find(template => template.id === templateId);
   const selectedGuard = GEOMETRY_GUARD_OPTIONS.find(option => option.value === geometryGuard);
+
+  function selectGenerator(nextKey: ArchitectureGeneratorKey) {
+    const section = data.sections.find(item => item.key === nextKey) ?? data.sections[0];
+    const nextTemplate = section?.templates.find(template => template.id === templateId)
+      ?? section?.templates[0]
+      ?? data.templates[0];
+
+    setActiveSectionKey(nextKey);
+    setTemplateId(nextTemplate?.id ?? '');
+    setSelections(initialArchitectureSelections(nextTemplate, section?.groups ?? data.groups));
+    setPromptTitle(nextTemplate?.titleEn ?? 'Architecture prompt');
+    if (nextTemplate?.defaultEngineKey && isArchitectureEngineKey(nextTemplate.defaultEngineKey)) {
+      setEngineKey(nextTemplate.defaultEngineKey);
+    }
+    setResult(null);
+    setStatus('');
+  }
 
   function selectTemplate(nextId: string) {
     const template = data.templates.find(item => item.id === nextId);
     setTemplateId(nextId);
-    setSelections(initialArchitectureSelections(template, data.groups));
+    setSelections(initialArchitectureSelections(template, activeGroups));
     setPromptTitle(template?.titleEn ?? 'Architecture prompt');
     if (template?.defaultEngineKey && isArchitectureEngineKey(template.defaultEngineKey)) {
       setEngineKey(template.defaultEngineKey);
@@ -216,11 +244,16 @@ export function ArchitecturePromptStudio({ data }: { data: ArchitectureCreationD
       <header className={styles.header}>
         <div>
           <a className={styles.backLink} href="/create">All domains / Architecture Studio</a>
+          <p className={styles.workflowLinks}>
+            <a className={styles.backLink} href="/create/architecture/clips">Clips</a>
+            <a className={styles.backLink} href="/create/architecture/upscale">Upscale</a>
+            <a className={styles.backLink} href="/create/architecture/audio">Audio</a>
+          </p>
           <p className={styles.eyebrow}>Primary MVP creation route</p>
           <h1>Architecture Studio for geometry-aware prompt packages</h1>
           <p className={styles.intro}>
-            Use published Architecture templates, admin-managed dropdown defaults, Geometry Guard, and reference roles to
-            compile a provider-ready prompt package. No image-generation API is called here.
+            Use published Architecture templates, generator-specific workbook dropdowns, Geometry Guard, and reference
+            roles to compile a provider-ready prompt package. No image-generation API is called here.
           </p>
         </div>
         <div className={styles.domainBadge}>
@@ -230,22 +263,44 @@ export function ArchitecturePromptStudio({ data }: { data: ArchitectureCreationD
         </div>
       </header>
 
+      <nav className={styles.generatorNav} aria-label="Architecture generator sections">
+        {data.sections.map(section => (
+          <button
+            key={section.key}
+            type="button"
+            className={`${styles.generatorButton} ${activeSection?.key === section.key ? styles.generatorButtonActive : ''}`}
+            onClick={() => selectGenerator(section.key)}
+          >
+            <strong>{section.navLabel}</strong>
+            <span>{section.groups.length} groups / {section.optionCount} options</span>
+          </button>
+        ))}
+      </nav>
+
       <div className={styles.workspace}>
         <section className={styles.controls}>
           <div className={styles.section}>
             <div className={styles.sectionHeading}>
               <span>01</span>
               <div>
-                <h2>Template and engine</h2>
-                <p>Published Architecture templates define the workflow, title, preferred engine, and dropdown defaults.</p>
+                <h2>Generator, template and engine</h2>
+                <p>Choose a generator section first so templates and dropdown groups stay focused.</p>
               </div>
             </div>
+
+            {activeSection ? (
+              <div className={styles.sectionSummary}>
+                <strong>{activeSection.label}</strong>
+                <p>{activeSection.description}</p>
+                <span>{activeSection.groups.length} option groups, {activeSection.optionCount} choices, {availableTemplates.length} matching templates</span>
+              </div>
+            ) : null}
 
             <label className={styles.field}>
               <span>Architecture template</span>
               <select value={templateId} onChange={event => selectTemplate(event.target.value)}>
                 <option value="">Choose a published template</option>
-                {data.templates.map(template => (
+                {availableTemplates.map(template => (
                   <option key={template.id} value={template.id}>{template.titleEn}</option>
                 ))}
               </select>
@@ -310,12 +365,12 @@ export function ArchitecturePromptStudio({ data }: { data: ArchitectureCreationD
             <div className={styles.sectionHeading}>
               <span>03</span>
               <div>
-                <h2>Database controls</h2>
-                <p>Each dropdown loads active Architecture/admin records and starts from template defaults, admin defaults, or required fallback values.</p>
+                <h2>{activeSection?.label ?? 'Generator'} controls</h2>
+                <p>These dropdowns are scoped to the selected generator instead of one mixed Architecture form.</p>
               </div>
             </div>
             {groups.length === 0 ? (
-              <p className={styles.notice}>No active Architecture dropdown groups are available. Configure them in Admin.</p>
+              <p className={styles.notice}>No active dropdown groups are available for this generator. Run the Phase 4C workbook import or configure them in Admin.</p>
             ) : groups.map(group => {
               const selectedOption = group.options.find(option => option.id === selections[group.key]);
               const source = selectionSource(group, selectedTemplate, selections[group.key]);
