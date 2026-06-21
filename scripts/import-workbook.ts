@@ -1,4 +1,6 @@
 import { inspectWorkbook } from './workbook-inspector';
+import { importArchitectureWorkbookData } from './architecture-workbook-importer';
+import { prisma } from '../src/lib/db';
 
 const workbookPath = process.argv[2] ?? 'data/ai_creative_control_platform_database_v2_expanded.xlsx';
 
@@ -25,9 +27,15 @@ async function main() {
   for (const sheet of sheets) {
     console.log(`${sheet.name}: ${sheet.rowCount} rows x ${sheet.columnCount} columns`);
   }
+
+  const summary = await importArchitectureWorkbookData(prisma, { workbookPath });
+  console.log('Architecture Phase 4C workbook import complete');
+  console.log(summary);
 }
 
 main().catch(error => {
   console.error(error);
   process.exit(1);
+}).finally(async () => {
+  await prisma.$disconnect();
 });

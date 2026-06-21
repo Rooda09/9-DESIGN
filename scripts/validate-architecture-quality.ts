@@ -23,6 +23,11 @@ import {
   architectureUpscaleControls,
   architectureUpscaleIntents
 } from '../src/config/architecture-upscale-audio';
+import {
+  ARCHITECTURE_GENERATOR_SECTIONS,
+  ARCHITECTURE_WORKBOOK_GROUP_KEYS
+} from '../src/lib/architecture/generators';
+import { loadArchitectureWorkbookData } from '../src/lib/architecture/workbook-data';
 
 const MAX_PROMPT_CHARS = 2000;
 
@@ -34,7 +39,27 @@ function nonEmpty(value: string | null | undefined) {
   return typeof value === 'string' && value.trim().length > 0;
 }
 
-function main() {
+async function main() {
+  const workbookData = await loadArchitectureWorkbookData();
+  const workbookGroupKeys = workbookData.dropdownGroups.map(group => group.key);
+  assert(
+    JSON.stringify(workbookGroupKeys) === JSON.stringify(ARCHITECTURE_WORKBOOK_GROUP_KEYS),
+    'Phase 4C Architecture workbook groups do not match the expected import order'
+  );
+  assert(workbookData.dropdownGroups.length === 18, 'Phase 4C workbook should expose 18 Architecture dropdown groups');
+  assert(workbookData.dropdownOptions.filter(option => option.isActive).length === 248, 'Phase 4C workbook should expose 248 active Architecture dropdown options');
+  assert(workbookData.templates.filter(template => template.isPublished).length === 50, 'Phase 4C workbook should expose 50 published Architecture templates');
+  assert(workbookData.promptTemplates.filter(template => template.isPublished).length === 520, 'Phase 4C workbook should expose 520 published Architecture prompt templates');
+
+  const generatorGroupKeys = new Set(ARCHITECTURE_GENERATOR_SECTIONS.flatMap(section => section.groupKeys));
+  for (const key of workbookGroupKeys) {
+    assert(generatorGroupKeys.has(key), `Workbook group ${key} is not assigned to an Architecture generator section`);
+  }
+  for (const template of workbookData.promptTemplates) {
+    assert(template.promptBody.length <= MAX_PROMPT_CHARS, `Workbook prompt template ${template.key} body exceeds ${MAX_PROMPT_CHARS}`);
+    assert(template.negativePrompt.length <= MAX_PROMPT_CHARS, `Workbook prompt template ${template.key} negative prompt exceeds ${MAX_PROMPT_CHARS}`);
+  }
+
   const groupKeys = new Set(architectureQualityDropdownGroups.map(group => group.key));
 
   for (const key of ARCHITECTURE_QUALITY_GROUP_KEYS) {
@@ -183,10 +208,14 @@ function main() {
 
   console.log('Architecture quality data valid');
   console.log({
-    groups: architectureQualityDropdownGroups.length,
-    options: architectureQualityDropdownOptions.length,
-    templates: architectureQualityTemplates.length,
-    promptTemplates: architectureQualityPromptTemplates.length,
+    workbookGroups: workbookData.dropdownGroups.length,
+    workbookOptions: workbookData.dropdownOptions.filter(option => option.isActive).length,
+    workbookTemplates: workbookData.templates.filter(template => template.isPublished).length,
+    workbookPromptTemplates: workbookData.promptTemplates.filter(template => template.isPublished).length,
+    legacyQualityGroups: architectureQualityDropdownGroups.length,
+    legacyQualityOptions: architectureQualityDropdownOptions.length,
+    legacyQualityTemplates: architectureQualityTemplates.length,
+    legacyQualityPromptTemplates: architectureQualityPromptTemplates.length,
     clipScenarios: architectureClipScenarios.length,
     upscaleIntents: architectureUpscaleIntents.length,
     upscaleControls: architectureUpscaleControls.length,
@@ -196,7 +225,7 @@ function main() {
 }
 
 try {
-  main();
+  await main();
 } catch (error) {
   console.error(error);
   process.exit(1);

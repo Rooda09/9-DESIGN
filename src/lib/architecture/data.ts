@@ -1,5 +1,10 @@
 import type { Prisma } from '@prisma/client';
 import { prisma } from '../db';
+import {
+  buildArchitectureGeneratorSections,
+  type ArchitectureGeneratorKey,
+  type ArchitectureGeneratorSection
+} from './generators';
 
 export interface ArchitectureTemplateRecord {
   id: string;
@@ -50,7 +55,13 @@ export interface ArchitectureCreationData {
   } | null;
   templates: ArchitectureTemplateRecord[];
   groups: ArchitectureDropdownGroupRecord[];
+  sections: ArchitectureGeneratorSectionRecord[];
 }
+
+export type ArchitectureGeneratorSectionRecord = ArchitectureGeneratorSection<
+  ArchitectureDropdownGroupRecord,
+  ArchitectureTemplateRecord
+> & { key: ArchitectureGeneratorKey };
 
 function stringRecord(value: Prisma.JsonValue | null): Record<string, string> {
   if (!value || typeof value !== 'object' || Array.isArray(value)) return {};
@@ -72,7 +83,7 @@ export async function loadArchitectureCreationData(): Promise<ArchitectureCreati
   });
 
   if (!domain) {
-    return { domain: null, templates: [], groups: [] };
+    return { domain: null, templates: [], groups: [], sections: [] };
   }
 
   const [templates, groups] = await Promise.all([
@@ -101,6 +112,42 @@ export async function loadArchitectureCreationData(): Promise<ArchitectureCreati
     })
   ]);
 
+  const mappedTemplates = templates.map(template => ({
+    id: template.id,
+    key: template.key,
+    titleEn: template.titleEn,
+    titleAr: template.titleAr,
+    bestFor: template.bestFor,
+    descriptionEn: template.descriptionEn,
+    descriptionAr: template.descriptionAr,
+    workflowType: template.workflowType,
+    defaultEngineKey: template.defaultEngineKey,
+    defaultDropdowns: stringRecord(template.defaultDropdowns)
+  }));
+  const mappedGroups = groups.map(group => ({
+    id: group.id,
+    key: group.key,
+    labelEn: group.labelEn,
+    labelAr: group.labelAr,
+    descriptionEn: group.descriptionEn,
+    descriptionAr: group.descriptionAr,
+    isRequired: group.isRequired,
+    isAdvanced: group.isAdvanced,
+    sortOrder: group.sortOrder,
+    options: group.options.map(option => ({
+      id: option.id,
+      value: option.value,
+      labelEn: option.labelEn,
+      labelAr: option.labelAr,
+      bestFor: option.bestFor,
+      descriptionEn: option.descriptionEn,
+      descriptionAr: option.descriptionAr,
+      isDefault: option.isDefault,
+      sortOrder: option.sortOrder,
+      promptFragment: promptFragment(option.metadata)
+    }))
+  }));
+
   return {
     domain: {
       id: domain.id,
@@ -109,40 +156,8 @@ export async function loadArchitectureCreationData(): Promise<ArchitectureCreati
       descriptionEn: domain.descriptionEn,
       descriptionAr: domain.descriptionAr
     },
-    templates: templates.map(template => ({
-      id: template.id,
-      key: template.key,
-      titleEn: template.titleEn,
-      titleAr: template.titleAr,
-      bestFor: template.bestFor,
-      descriptionEn: template.descriptionEn,
-      descriptionAr: template.descriptionAr,
-      workflowType: template.workflowType,
-      defaultEngineKey: template.defaultEngineKey,
-      defaultDropdowns: stringRecord(template.defaultDropdowns)
-    })),
-    groups: groups.map(group => ({
-      id: group.id,
-      key: group.key,
-      labelEn: group.labelEn,
-      labelAr: group.labelAr,
-      descriptionEn: group.descriptionEn,
-      descriptionAr: group.descriptionAr,
-      isRequired: group.isRequired,
-      isAdvanced: group.isAdvanced,
-      sortOrder: group.sortOrder,
-      options: group.options.map(option => ({
-        id: option.id,
-        value: option.value,
-        labelEn: option.labelEn,
-        labelAr: option.labelAr,
-        bestFor: option.bestFor,
-        descriptionEn: option.descriptionEn,
-        descriptionAr: option.descriptionAr,
-        isDefault: option.isDefault,
-        sortOrder: option.sortOrder,
-        promptFragment: promptFragment(option.metadata)
-      }))
-    }))
+    templates: mappedTemplates,
+    groups: mappedGroups,
+    sections: buildArchitectureGeneratorSections(mappedGroups, mappedTemplates)
   };
 }
