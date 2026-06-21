@@ -12,6 +12,17 @@ import {
   ARCHITECTURE_CONTINUITY_KEYS,
   architectureClipScenarios
 } from '../src/config/architecture-clips';
+import {
+  ARCHITECTURE_AUDIO_DURATIONS,
+  ARCHITECTURE_AUDIO_MOOD_KEYS,
+  ARCHITECTURE_SFX_DIRECTION_KEYS,
+  ARCHITECTURE_UPSCALE_CONTROL_KEYS,
+  ARCHITECTURE_UPSCALE_INTENT_KEYS,
+  architectureAudioMoods,
+  architectureSfxDirections,
+  architectureUpscaleControls,
+  architectureUpscaleIntents
+} from '../src/config/architecture-upscale-audio';
 
 const MAX_PROMPT_CHARS = 2000;
 
@@ -103,13 +114,84 @@ function main() {
     assert(scenario.maxCharacters <= MAX_PROMPT_CHARS, `Clip scenario ${scenario.key} exceeds max character policy`);
   }
 
+  const upscaleIntentKeys = new Set(architectureUpscaleIntents.map(intent => intent.key));
+  for (const key of ARCHITECTURE_UPSCALE_INTENT_KEYS) {
+    assert(upscaleIntentKeys.has(key), `Missing Architecture upscale intent: ${key}`);
+  }
+  assert(upscaleIntentKeys.size === ARCHITECTURE_UPSCALE_INTENT_KEYS.length, 'Architecture upscale intents contain duplicate keys');
+
+  for (const intent of architectureUpscaleIntents) {
+    assert(nonEmpty(intent.labelEn), `Upscale intent ${intent.key} missing English label`);
+    assert(nonEmpty(intent.labelAr), `Upscale intent ${intent.key} missing Arabic label`);
+    assert(nonEmpty(intent.bestFor), `Upscale intent ${intent.key} missing best-for guidance`);
+    assert(nonEmpty(intent.descriptionEn), `Upscale intent ${intent.key} missing English description`);
+    assert(nonEmpty(intent.descriptionAr), `Upscale intent ${intent.key} missing Arabic description`);
+    assert(nonEmpty(intent.objective), `Upscale intent ${intent.key} missing objective`);
+    assert(nonEmpty(intent.enhancementInstruction), `Upscale intent ${intent.key} missing enhancement instruction`);
+    assert(nonEmpty(intent.outputFormatNote), `Upscale intent ${intent.key} missing output format note`);
+  }
+
+  const upscaleControlKeys = new Set(architectureUpscaleControls.map(control => control.key));
+  for (const key of ARCHITECTURE_UPSCALE_CONTROL_KEYS) {
+    assert(upscaleControlKeys.has(key), `Missing Architecture upscale control: ${key}`);
+  }
+  assert(upscaleControlKeys.size === ARCHITECTURE_UPSCALE_CONTROL_KEYS.length, 'Architecture upscale controls contain duplicate keys');
+
+  for (const control of architectureUpscaleControls) {
+    assert(nonEmpty(control.labelEn), `Upscale control ${control.key} missing English label`);
+    assert(nonEmpty(control.labelAr), `Upscale control ${control.key} missing Arabic label`);
+    assert(nonEmpty(control.descriptionEn), `Upscale control ${control.key} missing English description`);
+    assert(nonEmpty(control.descriptionAr), `Upscale control ${control.key} missing Arabic description`);
+    assert(nonEmpty(control.preservationInstruction), `Upscale control ${control.key} missing preservation instruction`);
+    assert(nonEmpty(control.checklistItem), `Upscale control ${control.key} missing checklist item`);
+  }
+
+  const audioMoodKeys = new Set(architectureAudioMoods.map(mood => mood.key));
+  for (const key of ARCHITECTURE_AUDIO_MOOD_KEYS) {
+    assert(audioMoodKeys.has(key), `Missing Architecture audio mood: ${key}`);
+  }
+  assert(audioMoodKeys.size === ARCHITECTURE_AUDIO_MOOD_KEYS.length, 'Architecture audio moods contain duplicate keys');
+
+  for (const mood of architectureAudioMoods) {
+    assert(nonEmpty(mood.labelEn), `Audio mood ${mood.key} missing English label`);
+    assert(nonEmpty(mood.labelAr), `Audio mood ${mood.key} missing Arabic label`);
+    assert(nonEmpty(mood.bestFor), `Audio mood ${mood.key} missing best-for guidance`);
+    assert(nonEmpty(mood.descriptionEn), `Audio mood ${mood.key} missing English description`);
+    assert(nonEmpty(mood.descriptionAr), `Audio mood ${mood.key} missing Arabic description`);
+    assert(nonEmpty(mood.promptFragment), `Audio mood ${mood.key} missing prompt fragment`);
+  }
+
+  const sfxDirectionKeys = new Set(architectureSfxDirections.map(direction => direction.key));
+  for (const key of ARCHITECTURE_SFX_DIRECTION_KEYS) {
+    assert(sfxDirectionKeys.has(key), `Missing Architecture SFX direction: ${key}`);
+  }
+  assert(sfxDirectionKeys.size === ARCHITECTURE_SFX_DIRECTION_KEYS.length, 'Architecture SFX directions contain duplicate keys');
+
+  for (const direction of architectureSfxDirections) {
+    assert(nonEmpty(direction.labelEn), `SFX direction ${direction.key} missing English label`);
+    assert(nonEmpty(direction.labelAr), `SFX direction ${direction.key} missing Arabic label`);
+    assert(nonEmpty(direction.bestFor), `SFX direction ${direction.key} missing best-for guidance`);
+    assert(nonEmpty(direction.descriptionEn), `SFX direction ${direction.key} missing English description`);
+    assert(nonEmpty(direction.descriptionAr), `SFX direction ${direction.key} missing Arabic description`);
+    assert(nonEmpty(direction.promptFragment), `SFX direction ${direction.key} missing prompt fragment`);
+  }
+
+  for (const duration of ARCHITECTURE_AUDIO_DURATIONS) {
+    assert(Number.isInteger(duration), `Audio duration ${duration} must be an integer`);
+    assert(duration > 0 && duration <= 20, `Audio duration ${duration} must stay within Phase 4C clip bounds`);
+  }
+
   console.log('Architecture quality data valid');
   console.log({
     groups: architectureQualityDropdownGroups.length,
     options: architectureQualityDropdownOptions.length,
     templates: architectureQualityTemplates.length,
     promptTemplates: architectureQualityPromptTemplates.length,
-    clipScenarios: architectureClipScenarios.length
+    clipScenarios: architectureClipScenarios.length,
+    upscaleIntents: architectureUpscaleIntents.length,
+    upscaleControls: architectureUpscaleControls.length,
+    audioMoods: architectureAudioMoods.length,
+    sfxDirections: architectureSfxDirections.length
   });
 }
 

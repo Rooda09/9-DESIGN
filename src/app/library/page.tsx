@@ -22,10 +22,10 @@ export default async function LibraryPage() {
     <main style={{ minHeight: 'calc(100vh - 58px)', padding: 32, background: '#0b0e0f', color: '#edf2ee' }}>
       <div style={{ maxWidth: 1000, margin: '0 auto' }}>
         <h1>Personal Architecture library</h1>
-        <p style={{ color: '#aeb9b3' }}>Private prompt and clip-scenario records saved by {user.email}. Advanced library tools remain out of scope.</p>
-        <h2 style={{ marginTop: 30 }}>Prompt packages</h2>
+        <p style={{ color: '#aeb9b3' }}>Private prompt, upscale, clip-scenario, and audio-prompt records saved by {user.email}. Advanced library tools remain out of scope.</p>
+        <h2 style={{ marginTop: 30 }}>Prompt and upscale packages</h2>
         {prompts.length === 0 ? (
-          <p>No saved prompts yet. <a href="/create/architecture" style={{ color: '#9fc1ad' }}>Open the Architecture studio</a>.</p>
+          <p>No saved prompts yet. <a href="/create/architecture" style={{ color: '#9fc1ad' }}>Open the Architecture studio</a> or <a href="/create/architecture/upscale" style={{ color: '#9fc1ad' }}>build an upscale prompt</a>.</p>
         ) : (
           <div style={{ display: 'grid', gap: 10, marginTop: 24 }}>
             {prompts.map(prompt => (
@@ -41,9 +41,9 @@ export default async function LibraryPage() {
             ))}
           </div>
         )}
-        <h2 style={{ marginTop: 36 }}>Clip scenario packages</h2>
+        <h2 style={{ marginTop: 36 }}>Clip scenario and audio packages</h2>
         {scenarios.length === 0 ? (
-          <p>No saved scenarios yet. <a href="/create/architecture/clips" style={{ color: '#9fc1ad' }}>Open the Clip Scenario Builder</a>.</p>
+          <p>No saved scenarios yet. <a href="/create/architecture/clips" style={{ color: '#9fc1ad' }}>Open the Clip Scenario Builder</a> or <a href="/create/architecture/audio" style={{ color: '#9fc1ad' }}>build an audio prompt</a>.</p>
         ) : (
           <div style={{ display: 'grid', gap: 10, marginTop: 24 }}>
             {scenarios.map(scenario => (

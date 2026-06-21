@@ -11,6 +11,11 @@ import {
   architectureQualityPromptTemplates,
   architectureQualityTemplates
 } from '../src/config/architecture-quality';
+import {
+  architectureAudioMoods,
+  architectureSfxDirections,
+  architectureUpscaleIntents
+} from '../src/config/architecture-upscale-audio';
 
 const isPreview = process.argv.includes('--preview');
 
@@ -20,6 +25,9 @@ async function preview() {
     imageEngines: ARCHITECTURE_IMAGE_ENGINES.length,
     clipEngines: ARCHITECTURE_CLIP_ENGINES.length,
     clipScenarios: architectureClipScenarios.length,
+    upscaleIntents: architectureUpscaleIntents.length,
+    audioMoods: architectureAudioMoods.length,
+    sfxDirections: architectureSfxDirections.length,
     dropdownGroups: architectureQualityDropdownGroups.length,
     dropdownOptions: architectureQualityDropdownOptions.length,
     templates: architectureQualityTemplates.length,
@@ -280,11 +288,228 @@ async function seedArchitectureQualityData() {
     }
   }
 
+  const upscaleCategory = await prisma.upscaleCategory.upsert({
+    where: { key: 'architecture_upscale_intents' },
+    update: {
+      labelEn: 'Architecture upscale intents',
+      labelAr: 'أهداف تكبير الصور المعمارية',
+      descriptionEn: 'Phase 4C Architecture-only upscale prompt intents. Provider execution is a placeholder.',
+      descriptionAr: 'أهداف مطالبات تكبير الصور المعمارية في Phase 4C. تنفيذ المزود مؤجل.',
+      isActive: true,
+      sortOrder: 10
+    },
+    create: {
+      key: 'architecture_upscale_intents',
+      labelEn: 'Architecture upscale intents',
+      labelAr: 'أهداف تكبير الصور المعمارية',
+      descriptionEn: 'Phase 4C Architecture-only upscale prompt intents. Provider execution is a placeholder.',
+      descriptionAr: 'أهداف مطالبات تكبير الصور المعمارية في Phase 4C. تنفيذ المزود مؤجل.',
+      isActive: true,
+      sortOrder: 10
+    }
+  });
+
+  for (const [index, intent] of architectureUpscaleIntents.entries()) {
+    await prisma.upscaleSetting.upsert({
+      where: {
+        categoryId_key: {
+          categoryId: upscaleCategory.id,
+          key: intent.key
+        }
+      },
+      update: {
+        labelEn: intent.labelEn,
+        labelAr: intent.labelAr,
+        bestFor: intent.bestFor,
+        descriptionEn: intent.descriptionEn,
+        descriptionAr: intent.descriptionAr,
+        providerKey: 'placeholder',
+        mode: intent.key,
+        targetResolution: 'planning_only',
+        preserveRealism: true,
+        tokenCost: 0,
+        isDefault: index === 0,
+        isActive: true,
+        sortOrder: (index + 1) * 10,
+        config: {
+          objective: intent.objective,
+          enhancementInstruction: intent.enhancementInstruction,
+          outputFormatNote: intent.outputFormatNote,
+          providerExecution: 'placeholder'
+        }
+      },
+      create: {
+        categoryId: upscaleCategory.id,
+        key: intent.key,
+        labelEn: intent.labelEn,
+        labelAr: intent.labelAr,
+        bestFor: intent.bestFor,
+        descriptionEn: intent.descriptionEn,
+        descriptionAr: intent.descriptionAr,
+        providerKey: 'placeholder',
+        mode: intent.key,
+        targetResolution: 'planning_only',
+        preserveRealism: true,
+        tokenCost: 0,
+        isDefault: index === 0,
+        isActive: true,
+        sortOrder: (index + 1) * 10,
+        config: {
+          objective: intent.objective,
+          enhancementInstruction: intent.enhancementInstruction,
+          outputFormatNote: intent.outputFormatNote,
+          providerExecution: 'placeholder'
+        }
+      }
+    });
+  }
+
+  const audioMoodCategory = await prisma.audioBackgroundCategory.upsert({
+    where: { key: 'architecture_audio_moods' },
+    update: {
+      labelEn: 'Architecture audio moods',
+      labelAr: 'أنماط الصوت المعماري',
+      descriptionEn: 'Phase 4C Architecture clip background audio prompt moods.',
+      descriptionAr: 'أنماط مطالبات الخلفية الصوتية لمقاطع العمارة في Phase 4C.',
+      isActive: true,
+      sortOrder: 10
+    },
+    create: {
+      key: 'architecture_audio_moods',
+      labelEn: 'Architecture audio moods',
+      labelAr: 'أنماط الصوت المعماري',
+      descriptionEn: 'Phase 4C Architecture clip background audio prompt moods.',
+      descriptionAr: 'أنماط مطالبات الخلفية الصوتية لمقاطع العمارة في Phase 4C.',
+      isActive: true,
+      sortOrder: 10
+    }
+  });
+
+  for (const [index, mood] of architectureAudioMoods.entries()) {
+    await prisma.audioBackgroundSetting.upsert({
+      where: {
+        categoryId_key: {
+          categoryId: audioMoodCategory.id,
+          key: mood.key
+        }
+      },
+      update: {
+        labelEn: mood.labelEn,
+        labelAr: mood.labelAr,
+        bestFor: mood.bestFor,
+        descriptionEn: mood.descriptionEn,
+        descriptionAr: mood.descriptionAr,
+        mood: mood.key,
+        genre: 'architecture_prompt',
+        tempo: 'slow_to_moderate',
+        ambience: mood.promptFragment,
+        promptFragment: mood.promptFragment,
+        defaultDurationSeconds: 10,
+        isDefault: index === 0,
+        isActive: true,
+        sortOrder: (index + 1) * 10,
+        config: { providerExecution: 'placeholder' }
+      },
+      create: {
+        categoryId: audioMoodCategory.id,
+        key: mood.key,
+        labelEn: mood.labelEn,
+        labelAr: mood.labelAr,
+        bestFor: mood.bestFor,
+        descriptionEn: mood.descriptionEn,
+        descriptionAr: mood.descriptionAr,
+        mood: mood.key,
+        genre: 'architecture_prompt',
+        tempo: 'slow_to_moderate',
+        ambience: mood.promptFragment,
+        promptFragment: mood.promptFragment,
+        defaultDurationSeconds: 10,
+        isDefault: index === 0,
+        isActive: true,
+        sortOrder: (index + 1) * 10,
+        config: { providerExecution: 'placeholder' }
+      }
+    });
+  }
+
+  const sfxCategory = await prisma.audioBackgroundCategory.upsert({
+    where: { key: 'architecture_sfx_directions' },
+    update: {
+      labelEn: 'Architecture SFX directions',
+      labelAr: 'اتجاهات المؤثرات المعمارية',
+      descriptionEn: 'Phase 4C subtle SFX directions for Architecture clip audio prompt packages.',
+      descriptionAr: 'اتجاهات مؤثرات صوتية خفيفة لحزم مطالبات صوت مقاطع العمارة في Phase 4C.',
+      isActive: true,
+      sortOrder: 20
+    },
+    create: {
+      key: 'architecture_sfx_directions',
+      labelEn: 'Architecture SFX directions',
+      labelAr: 'اتجاهات المؤثرات المعمارية',
+      descriptionEn: 'Phase 4C subtle SFX directions for Architecture clip audio prompt packages.',
+      descriptionAr: 'اتجاهات مؤثرات صوتية خفيفة لحزم مطالبات صوت مقاطع العمارة في Phase 4C.',
+      isActive: true,
+      sortOrder: 20
+    }
+  });
+
+  for (const [index, direction] of architectureSfxDirections.entries()) {
+    await prisma.audioBackgroundSetting.upsert({
+      where: {
+        categoryId_key: {
+          categoryId: sfxCategory.id,
+          key: direction.key
+        }
+      },
+      update: {
+        labelEn: direction.labelEn,
+        labelAr: direction.labelAr,
+        bestFor: direction.bestFor,
+        descriptionEn: direction.descriptionEn,
+        descriptionAr: direction.descriptionAr,
+        mood: 'sfx_direction',
+        genre: 'architecture_sfx',
+        tempo: 'scene_dependent',
+        ambience: direction.promptFragment,
+        promptFragment: direction.promptFragment,
+        sfxDirection: direction.promptFragment,
+        defaultDurationSeconds: 10,
+        isDefault: index === 0,
+        isActive: true,
+        sortOrder: (index + 1) * 10,
+        config: { providerExecution: 'placeholder' }
+      },
+      create: {
+        categoryId: sfxCategory.id,
+        key: direction.key,
+        labelEn: direction.labelEn,
+        labelAr: direction.labelAr,
+        bestFor: direction.bestFor,
+        descriptionEn: direction.descriptionEn,
+        descriptionAr: direction.descriptionAr,
+        mood: 'sfx_direction',
+        genre: 'architecture_sfx',
+        tempo: 'scene_dependent',
+        ambience: direction.promptFragment,
+        promptFragment: direction.promptFragment,
+        sfxDirection: direction.promptFragment,
+        defaultDurationSeconds: 10,
+        isDefault: index === 0,
+        isActive: true,
+        sortOrder: (index + 1) * 10,
+        config: { providerExecution: 'placeholder' }
+      }
+    });
+  }
+
   console.log('Architecture quality seed complete');
   console.log({
     imageEngines: ARCHITECTURE_IMAGE_ENGINES.length,
     clipEngines: ARCHITECTURE_CLIP_ENGINES.length,
     clipScenarios: architectureClipScenarios.length,
+    upscaleIntents: architectureUpscaleIntents.length,
+    audioMoods: architectureAudioMoods.length,
+    sfxDirections: architectureSfxDirections.length,
     dropdownGroups: architectureQualityDropdownGroups.length,
     dropdownOptions: architectureQualityDropdownOptions.length,
     templates: architectureQualityTemplates.length,

@@ -31,6 +31,16 @@ export default function CreatePage() {
             <strong style={{ fontSize: 24 }}>Architecture Clip Scenarios</strong>
             <span style={{ color: '#b8c3bd', lineHeight: 1.55 }}>Story structure, camera movement, continuity locks, engine placeholders, and private scenario-library saves.</span>
           </a>
+          <a href="/create/architecture/upscale" style={{ ...domainCardStyle, borderColor: '#596f63' }}>
+            <span style={{ color: '#9fc1ad', fontSize: 13, fontWeight: 700 }}>PHASE 4C</span>
+            <strong style={{ fontSize: 24 }}>Architecture Upscale</strong>
+            <span style={{ color: '#b8c3bd', lineHeight: 1.55 }}>Render enhancement objectives, preservation controls, negative upscale prompts, and private prompt-library saves.</span>
+          </a>
+          <a href="/create/architecture/audio" style={{ ...domainCardStyle, borderColor: '#596f63' }}>
+            <span style={{ color: '#9fc1ad', fontSize: 13, fontWeight: 700 }}>PHASE 4C</span>
+            <strong style={{ fontSize: 24 }}>Architecture Clip Audio</strong>
+            <span style={{ color: '#b8c3bd', lineHeight: 1.55 }}>Background audio mood, subtle SFX direction, timing, loop instructions, and private scenario-library saves.</span>
+          </a>
           <div aria-disabled="true" style={{ ...domainCardStyle, opacity: 0.5 }}>
             <span style={{ color: '#8b9691', fontSize: 13, fontWeight: 700 }}>COMING SOON</span>
             <strong style={{ fontSize: 24 }}>Photography</strong>
